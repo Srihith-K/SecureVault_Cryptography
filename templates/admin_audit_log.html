@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Audit Log — SecureVault Admin</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Typography: Plus Jakarta Sans (UI & Display), JetBrains Mono (Data & Hashes) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Immediate Theme Initialization Script (Prevents Flickering) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const theme = savedTheme ? savedTheme : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
+    <style>
+        /* ================= THEME COLOR VARIABLES ================= */
+        :root, [data-theme="dark"] {
+            --bg-body: #060913;
+            --bg-card: rgba(15, 23, 42, 0.55);
+            --bg-card-hover: rgba(30, 41, 59, 0.65);
+            --bg-glass: rgba(9, 13, 22, 0.75);
+            --bg-input: rgba(9, 13, 22, 0.6);
+            --bg-header: rgba(15, 23, 42, 0.4);
+
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.18);
+
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --text-heading: #ffffff;
+
+            --bg-gradient-overlay: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20, 184, 166, 0.12), transparent),
+                radial-gradient(circle at 100% 40%, rgba(99, 102, 241, 0.08), transparent 40%),
+                radial-gradient(circle at 0% 80%, rgba(168, 85, 247, 0.06), transparent 40%),
+                radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+
+            --hero-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.3) 100%);
+            --brand-gradient: linear-gradient(135deg, #ffffff 30%, var(--accent-teal) 100%);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-card-hover: rgba(255, 255, 255, 0.98);
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --bg-input: #ffffff;
+            --bg-header: rgba(241, 245, 249, 0.8);
+
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --border-strong: rgba(0, 0, 0, 0.18);
+
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --text-heading: #020617;
+
+            --bg-gradient-overlay: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20, 184, 166, 0.1), transparent),
+                radial-gradient(circle at 100% 40%, rgba(99, 102, 241, 0.05), transparent 40%),
+                radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+
+            --hero-bg: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            --brand-gradient: linear-gradient(135deg, #0f172a 30%, #0d9488 100%);
+        }
+
+        /* Brand Accent System */
+        :root {
+            --accent-teal: #14b8a6;
+            --accent-teal-glow: rgba(20, 184, 166, 0.15);
+            
+            --accent-blue: #0284c7;
+            --accent-blue-glow: rgba(2, 132, 199, 0.15);
+
+            --accent-purple: #9333ea;
+            --accent-purple-glow: rgba(147, 51, 234, 0.15);
+
+            --accent-gold: #d97706;
+            --accent-gold-glow: rgba(217, 119, 6, 0.15);
+
+            --accent-danger: #dc2626;
+            --accent-danger-glow: rgba(220, 38, 38, 0.15);
+
+            --accent-success: #10b981;
+            --accent-success-glow: rgba(16, 185, 129, 0.15);
+
+            --radius-xl: 20px;
+            --radius-lg: 14px;
+            --radius-md: 10px;
+            --radius-pill: 9999px;
+
+            --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        /* Ambient glowing background grid */
+        body {
+            background-color: var(--bg-body) !important;
+            background-image: var(--bg-gradient-overlay);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px;
+            background-attachment: fixed;
+            color: var(--text-primary) !important;
+            font-family: var(--font-sans) !important;
+            min-height: 100vh;
+            line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Responsive text colors in Light vs Dark mode */
+        [data-theme="light"] .text-white {
+            color: var(--text-heading) !important;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: var(--radius-pill);
+        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.5); }
+
+        /* ================= FLOATING NAVBAR ================= */
+        .navbar-custom {
+            background: var(--bg-glass) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 12px 0 !important;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .brand-logo {
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.03em;
+            background: var(--brand-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(56, 189, 248, 0.1));
+            border: 1px solid rgba(20, 184, 166, 0.4);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-teal);
+            font-size: 1.1rem;
+            box-shadow: 0 0 15px rgba(20, 184, 166, 0.2);
+        }
+
+        .nav-btn {
+            font-size: 0.82rem !important;
+            font-weight: 600 !important;
+            padding: 8px 16px !important;
+            border-radius: var(--radius-pill) !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-btn-ghost {
+            background: rgba(148, 163, 184, 0.08);
+            color: var(--text-primary) !important;
+            border-color: var(--border-subtle);
+        }
+        .nav-btn-ghost:hover {
+            background: rgba(148, 163, 184, 0.18);
+            color: var(--text-heading) !important;
+            border-color: var(--border-strong);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn-teal {
+            background: var(--accent-teal);
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 14px rgba(20, 184, 166, 0.25);
+        }
+        .nav-btn-teal:hover {
+            background: #0d9488;
+            box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* ================= HERO HEADER ================= */
+        .hero-banner {
+            background: var(--hero-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            padding: 28px 32px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: background 0.3s ease;
+        }
+
+        /* ================= AUDIT TABLE STYLING ================= */
+        .table-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-card-header {
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--bg-header);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-custom {
+            margin-bottom: 0 !important;
+            vertical-align: middle;
+        }
+
+        .table-custom thead th {
+            background: var(--bg-header) !important;
+            color: var(--text-muted) !important;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 14px 24px !important;
+            border-bottom: 1px solid var(--border-subtle) !important;
+            white-space: nowrap;
+        }
+
+        .table-custom tbody tr {
+            transition: all 0.15s ease;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .table-custom tbody tr:last-child {
+            border-bottom: none;
+        }
+        .table-custom tbody tr:hover {
+            background-color: var(--bg-card-hover) !important;
+        }
+
+        .table-custom td {
+            padding: 16px 24px !important;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            white-space: nowrap;
+            background: transparent !important;
+        }
+
+        /* Badges & User avatar pill */
+        .user-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--text-heading);
+        }
+
+        .user-initial-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--accent-teal-glow);
+            color: var(--accent-teal);
+            border: 1px solid rgba(20, 184, 166, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .action-badge {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            padding: 5px 12px;
+            border-radius: var(--radius-pill);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+        }
+
+        .action-badge-default {
+            background: var(--accent-teal-glow);
+            color: var(--accent-teal);
+            border: 1px solid rgba(20, 184, 166, 0.3);
+        }
+
+        .action-badge-danger {
+            background: var(--accent-danger-glow);
+            color: var(--accent-danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .action-badge-warning {
+            background: var(--accent-gold-glow);
+            color: var(--accent-gold);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .file-name-chip {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            color: var(--text-primary);
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            padding: 4px 10px;
+            border-radius: var(--radius-md);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= FLOATING NAVBAR ================= -->
+    <nav class="navbar navbar-expand-xl navbar-custom">
+        <div class="container">
+            <a class="brand-logo" href="/">
+                <div class="brand-icon">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <span>SecureVault Admin</span>
+            </a>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <!-- Theme Toggle Button -->
+                <button type="button" id="themeToggleBtn" class="nav-btn nav-btn-ghost me-2" onclick="toggleTheme()">
+                    <i class="bi bi-moon-stars-fill text-teal" id="themeIcon"></i>
+                    <span id="themeText">Dark</span>
+                </button>
+
+                <a href="{{ url_for('admin_dashboard') }}" class="nav-btn nav-btn-ghost">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Admin Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ================= HERO HEADER ================= -->
+    <div class="container mt-4">
+        <div class="hero-banner">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-journal-text text-teal fs-3"></i>
+                        <h2 class="mb-0 fw-bold fs-3 text-heading">System Audit Log</h2>
+                    </div>
+                    <p class="text-secondary mb-0 small">
+                        Real-time immutable security activity log & compliance verification records.
+                    </p>
+                </div>
+
+                <div>
+                    <a href="{{ url_for('admin_dashboard') }}" class="nav-btn nav-btn-ghost py-2 px-3">
+                        <i class="bi bi-shield-lock me-1"></i> Admin Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= AUDIT TABLE CARD ================= -->
+    <div class="container mt-4 mb-5">
+        <div class="table-card">
+            <div class="table-card-header">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-list-check text-teal fs-5"></i>
+                    <h5 class="mb-0 text-heading fw-bold fs-6">Audit Trail Records</h5>
+                </div>
+                <span class="badge bg-body text-muted border border-secondary px-3 py-2 rounded-pill font-mono">
+                    {{ logs|length if logs else 0 }} entries
+                </span>
+            </div>
+
+            <div class="card-body p-0">
+                {% if logs %}
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width: 22%">Timestamp</th>
+                                <th style="width: 24%">User / Operator</th>
+                                <th style="width: 24%">Action Performed</th>
+                                <th style="width: 30%">Target File / Object</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity, user in logs %}
+                            <tr>
+                                <td class="font-mono text-muted fs-7">
+                                    <i class="bi bi-clock me-1 text-teal"></i>
+                                    {{ activity.timestamp }}
+                                </td>
+                                <td>
+                                    <div class="user-pill">
+                                        <div class="user-initial-badge">
+                                            {{ user.name[:2].upper() if user.name else 'U' }}
+                                        </div>
+                                        <span>{{ user.name }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% set act_lower = activity.action|lower %}
+                                    {% if 'delete' in act_lower or 'remove' in act_lower %}
+                                        <span class="action-badge action-badge-danger">
+                                            <i class="bi bi-trash-fill"></i> {{ activity.action }}
+                                        </span>
+                                    {% elif 'decrypt' in act_lower or 'download' in act_lower %}
+                                        <span class="action-badge action-badge-warning">
+                                            <i class="bi bi-unlock-fill"></i> {{ activity.action }}
+                                        </span>
+                                    {% else %}
+                                        <span class="action-badge action-badge-default">
+                                            <i class="bi bi-activity"></i> {{ activity.action }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if activity.filename %}
+                                        <span class="file-name-chip">
+                                            <i class="bi bi-file-earmark-lock text-teal me-1"></i>
+                                            {{ activity.filename }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted fs-7">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-5 text-center">
+                    <div class="mb-3 text-muted display-4">
+                        <i class="bi bi-journal-x"></i>
+                    </div>
+                    <h5 class="text-heading fw-bold mb-1">No Audit Records Found</h5>
+                    <p class="text-muted small mb-0">System audit history is currently empty.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="text-center py-4 border-top border-secondary border-opacity-10 text-muted fs-7">
+        <div class="container">
+            <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
+                <div>
+                    <strong class="text-heading">SecureVault</strong> © 2026 — Security Audit System
+                </div>
+                <div class="d-flex align-items-center gap-3 text-muted fs-8">
+                    <span><i class="bi bi-shield-check text-teal me-1"></i> Compliance Verification Active</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Dark / Light Theme Switching Logic -->
+    <script>
+        function applyThemeUI(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            if (themeIcon && themeText) {
+                if (theme === 'light') {
+                    themeIcon.className = 'bi bi-sun-fill text-warning';
+                    themeText.textContent = 'Light';
+                } else {
+                    themeIcon.className = 'bi bi-moon-stars-fill text-teal';
+                    themeText.textContent = 'Dark';
+                }
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyThemeUI(newTheme);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            applyThemeUI(currentTheme);
+        });
+    </script>
+</body>
+
+</html>

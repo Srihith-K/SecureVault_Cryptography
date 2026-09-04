@@ -1,0 +1,1337 @@
+
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureVault — Cloud Security Dashboard</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Typography: Plus Jakarta Sans (UI & Display), JetBrains Mono (Data & Hashes) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Immediate Theme Initialization Script (Prevents Flickering) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const theme = savedTheme ? savedTheme : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
+    <style>
+        /* ================= HIGH-CONTRAST DARK & LIGHT THEME SYSTEM ================= */
+        :root, [data-theme="dark"] {
+            --bg-body: #030712;
+            --bg-card: rgba(17, 24, 39, 0.75);
+            --bg-card-hover: rgba(31, 41, 55, 0.9);
+            --bg-glass: rgba(7, 12, 24, 0.88);
+            --bg-input: rgba(15, 23, 42, 0.85);
+            --bg-header: rgba(17, 24, 39, 0.75);
+
+            --border-subtle: rgba(255, 255, 255, 0.12);
+            --border-strong: rgba(45, 212, 191, 0.4);
+
+            --text-primary: #ffffff;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --text-heading: #ffffff;
+
+            --bg-gradient-overlay: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20, 184, 166, 0.18), transparent 70%),
+                radial-gradient(circle at 90% 40%, rgba(99, 102, 241, 0.12), transparent 50%),
+                radial-gradient(circle at 10% 80%, rgba(168, 85, 247, 0.1), transparent 50%),
+                radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+
+            --hero-bg: linear-gradient(135deg, rgba(17, 24, 39, 0.9) 0%, rgba(31, 41, 55, 0.65) 100%);
+            --brand-gradient: linear-gradient(135deg, #ffffff 30%, #2dd4bf 100%);
+            --sidebar-bg: rgba(7, 12, 24, 0.97);
+            --dropdown-bg: rgba(15, 23, 42, 0.98);
+            --dropdown-border: rgba(45, 212, 191, 0.45);
+            --dropdown-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 20px rgba(45, 212, 191, 0.15);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-card: rgba(255, 255, 255, 0.92);
+            --bg-card-hover: rgba(255, 255, 255, 0.98);
+            --bg-glass: rgba(255, 255, 255, 0.9);
+            --bg-input: #ffffff;
+            --bg-header: rgba(241, 245, 249, 0.85);
+
+            --border-subtle: rgba(0, 0, 0, 0.1);
+            --border-strong: rgba(0, 0, 0, 0.22);
+
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --text-heading: #020617;
+
+            --bg-gradient-overlay: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20, 184, 166, 0.1), transparent),
+                radial-gradient(circle at 100% 40%, rgba(99, 102, 241, 0.05), transparent 40%),
+                radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+
+            --hero-bg: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            --brand-gradient: linear-gradient(135deg, #0f172a 30%, #0d9488 100%);
+            --sidebar-bg: rgba(255, 255, 255, 0.96);
+            --dropdown-bg: rgba(255, 255, 255, 0.98);
+            --dropdown-border: rgba(20, 184, 166, 0.35);
+            --dropdown-shadow: 0 20px 50px rgba(15, 23, 42, 0.15);
+        }
+
+        /* Brand Accent System */
+        :root {
+            --accent-teal: #14b8a6;
+            --accent-teal-glow: rgba(20, 184, 166, 0.2);
+            
+            --accent-blue: #0284c7;
+            --accent-blue-glow: rgba(2, 132, 199, 0.2);
+
+            --accent-purple: #9333ea;
+            --accent-purple-glow: rgba(147, 51, 234, 0.2);
+
+            --accent-gold: #d97706;
+            --accent-gold-glow: rgba(217, 119, 6, 0.2);
+
+            --accent-danger: #dc2626;
+            --accent-danger-glow: rgba(220, 38, 38, 0.2);
+
+            --accent-success: #10b981;
+
+            --radius-xl: 20px;
+            --radius-lg: 14px;
+            --radius-md: 10px;
+            --radius-pill: 9999px;
+
+            --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        /* Explicit Text Utility Overrides */
+        .text-heading { color: var(--text-heading) !important; }
+        .text-secondary-custom { color: var(--text-secondary) !important; }
+        .text-muted-custom { color: var(--text-muted) !important; }
+        .text-teal { color: #2dd4bf !important; }
+
+        /* Ambient background */
+        body {
+            background-color: var(--bg-body) !important;
+            background-image: var(--bg-gradient-overlay);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px;
+            background-attachment: fixed;
+            color: var(--text-primary) !important;
+            font-family: var(--font-sans) !important;
+            min-height: 100vh;
+            line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.35);
+            border-radius: var(--radius-pill);
+        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.55); }
+
+        /* ================= CLEAN REFINED NAVBAR ================= */
+        .navbar-custom {
+            background: var(--bg-glass) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 14px 0 !important;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .brand-logo {
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.03em;
+            background: var(--brand-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.25), rgba(56, 189, 248, 0.15));
+            border: 1px solid rgba(20, 184, 166, 0.4);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-teal);
+            font-size: 1.1rem;
+            box-shadow: 0 0 15px rgba(20, 184, 166, 0.25);
+        }
+
+        .menu-toggle-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(148, 163, 184, 0.12);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-heading);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .menu-toggle-btn:hover {
+            background: rgba(20, 184, 166, 0.18);
+            color: var(--accent-teal);
+            border-color: rgba(20, 184, 166, 0.35);
+            transform: scale(1.05);
+        }
+
+        /* Circular Theme Icon Toggle Button */
+        .theme-icon-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(148, 163, 184, 0.12);
+            border: 1px solid var(--border-subtle);
+            color: var(--accent-teal);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .theme-icon-btn:hover {
+            background: rgba(148, 163, 184, 0.22);
+            transform: rotate(15deg);
+        }
+
+        /* Nav Quick Buttons */
+        .btn-nav-action {
+            font-size: 0.82rem !important;
+            font-weight: 700 !important;
+            padding: 8px 18px !important;
+            border-radius: var(--radius-pill) !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            border: 1px solid transparent;
+        }
+        .btn-nav-teal {
+            background: var(--accent-teal);
+            color: #ffffff !important;
+            box-shadow: 0 4px 14px rgba(20, 184, 166, 0.3);
+        }
+        .btn-nav-teal:hover {
+            background: #0d9488;
+            box-shadow: 0 6px 20px rgba(20, 184, 166, 0.45);
+            transform: translateY(-1px);
+        }
+
+        /* ================= SIDEBAR OFFCANVAS DRAWER ================= */
+        .offcanvas-custom {
+            background: var(--sidebar-bg) !important;
+            backdrop-filter: blur(24px);
+            border-right: 1px solid var(--border-subtle) !important;
+            color: var(--text-primary) !important;
+            width: 320px !important;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .sidebar-user-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-teal), var(--accent-blue));
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 12px rgba(20, 184, 166, 0.3);
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 18px;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            margin-bottom: 6px;
+            border: 1px solid transparent;
+        }
+
+        .sidebar-nav-item:hover {
+            color: var(--text-heading);
+            background: rgba(148, 163, 184, 0.14);
+            border-color: var(--border-subtle);
+            transform: translateX(4px);
+        }
+
+        .sidebar-nav-item.active {
+            color: var(--accent-teal);
+            background: var(--accent-teal-glow);
+            border-color: rgba(20, 184, 166, 0.35);
+            font-weight: 700;
+        }
+
+        .sidebar-section-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin: 20px 0 10px 10px;
+        }
+
+        /* ================= DASHBOARD HERO HEADER ================= */
+        .hero-banner {
+            background: var(--hero-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s ease;
+        }
+
+        .user-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: var(--radius-pill);
+            background: linear-gradient(135deg, var(--accent-teal), #0ea5e9);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(20, 184, 166, 0.35);
+        }
+
+        .security-badge-pill {
+            background: rgba(16, 185, 129, 0.18);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: var(--accent-success);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: var(--radius-pill);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            background-color: var(--accent-success);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-success);
+            animation: pulseAnimation 2s infinite;
+        }
+        @keyframes pulseAnimation {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* ================= METRIC CARDS ================= */
+        .stat-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+        .stat-card:hover {
+            border-color: var(--border-strong);
+            transform: translateY(-4px);
+            background: var(--bg-card-hover);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25), 0 0 20px rgba(20, 184, 166, 0.12);
+        }
+
+        .stat-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            margin-bottom: 16px;
+        }
+
+        .icon-teal { background: var(--accent-teal-glow); color: var(--accent-teal); border: 1px solid rgba(20, 184, 166, 0.35); }
+        .icon-blue { background: var(--accent-blue-glow); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.35); }
+        .icon-purple { background: var(--accent-purple-glow); color: var(--accent-purple); border: 1px solid rgba(168, 85, 247, 0.35); }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-heading);
+        }
+
+        /* ================= STORAGE PROGRESS CARD ================= */
+        .progress-container {
+            background: rgba(148, 163, 184, 0.18);
+            border-radius: var(--radius-pill);
+            padding: 4px;
+            border: 1px solid var(--border-subtle);
+            margin: 16px 0;
+        }
+
+        .progress-bar-custom {
+            height: 14px;
+            border-radius: var(--radius-pill);
+            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ================= CONTROL BAR & SEARCH ================= */
+        .filter-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 16px 20px;
+        }
+
+        .custom-input {
+            background: var(--bg-input) !important;
+            border: 1px solid var(--border-subtle) !important;
+            color: var(--text-primary) !important;
+            font-size: 0.88rem;
+            border-radius: var(--radius-md) !important;
+            padding: 10px 16px !important;
+            transition: all 0.2s ease;
+        }
+
+        .custom-select {
+            background-color: var(--bg-input) !important;
+            border: 1px solid var(--border-subtle) !important;
+            color: var(--text-primary) !important;
+            font-size: 0.88rem;
+            border-radius: var(--radius-md) !important;
+            padding: 10px 16px !important;
+        }
+
+        /* ================= HIGH-CONTRAST ACCORDION & ACTIVITIES ================= */
+        .accordion-button {
+            color: var(--text-heading) !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+        }
+        .accordion-button:not(.collapsed) {
+            color: var(--accent-teal) !important;
+            background-color: var(--bg-card-hover) !important;
+        }
+        .accordion-button::after {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+        [data-theme="light"] .accordion-button::after {
+            filter: none;
+        }
+
+        .activity-item {
+            padding: 14px 18px;
+            border-radius: var(--radius-md);
+            background: rgba(15, 23, 42, 0.85) !important;
+            border: 1px solid var(--border-subtle) !important;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.2s ease;
+        }
+        [data-theme="light"] .activity-item {
+            background: #ffffff !important;
+        }
+        .activity-item:hover {
+            border-color: rgba(45, 212, 191, 0.45) !important;
+            background: var(--bg-card-hover) !important;
+            transform: translateX(3px);
+        }
+
+        .activity-title {
+            color: #ffffff !important;
+            font-weight: 600;
+            font-size: 0.88rem;
+        }
+        [data-theme="light"] .activity-title {
+            color: #0f172a !important;
+        }
+
+        .activity-time {
+            color: #94a3b8 !important;
+            font-size: 0.78rem;
+            font-family: var(--font-mono);
+        }
+        [data-theme="light"] .activity-time {
+            color: #64748b !important;
+        }
+
+        .activity-icon-badge {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--accent-teal-glow);
+            color: var(--accent-teal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            border: 1px solid rgba(20, 184, 166, 0.3);
+        }
+
+        /* ================= FILE TABLE & OVERFLOW FIX ================= */
+        .table-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            overflow: visible !important; /* CRITICAL FIX: Allows popovers to render over the table */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+            position: relative;
+        }
+
+        .table-responsive {
+            overflow: visible !important; /* Prevent clipping */
+        }
+
+        .table-card-header {
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--bg-header);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top-left-radius: var(--radius-xl);
+            border-top-right-radius: var(--radius-xl);
+        }
+
+        .table-custom {
+            margin-bottom: 0 !important;
+            vertical-align: middle;
+        }
+
+        .table-custom thead th {
+            background: var(--bg-header) !important;
+            color: var(--text-muted) !important;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 14px 24px !important;
+            border-bottom: 1px solid var(--border-subtle) !important;
+            white-space: nowrap;
+        }
+
+        .table-custom tbody tr {
+            transition: all 0.15s ease;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .table-custom tbody tr:last-child {
+            border-bottom: none;
+        }
+        .table-custom tbody tr:hover {
+            background-color: var(--bg-card-hover) !important;
+        }
+
+        .table-custom td {
+            padding: 16px 24px !important;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            white-space: nowrap;
+            background: transparent !important;
+        }
+
+        .file-icon-box {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+
+        .file-icon-pdf { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
+        .file-icon-img { background: rgba(236, 72, 153, 0.18); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.35); }
+        .file-icon-zip { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
+        .file-icon-txt { background: rgba(56, 189, 248, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); }
+        .file-icon-code { background: rgba(168, 85, 247, 0.18); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); }
+        .file-icon-audio { background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); }
+        .file-icon-video { background: rgba(99, 102, 241, 0.18); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.35); }
+        .file-icon-sheet { background: rgba(34, 197, 94, 0.18); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); }
+        .file-icon-default { background: rgba(148, 163, 184, 0.18); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.35); }
+
+        .encrypted-chip {
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+            color: var(--text-muted);
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            padding: 4px 10px;
+            border-radius: var(--radius-md);
+            max-width: 140px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .encrypted-chip:hover {
+            color: #2dd4bf;
+            border-color: rgba(45, 212, 191, 0.45);
+        }
+
+        /* ================= HIGH-END GLASS ACTION POPOVER ================= */
+        .btn-action-dots {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-input);
+            color: var(--text-heading);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+        }
+        .btn-action-dots:hover, .btn-action-dots[aria-expanded="true"] {
+            background: var(--accent-teal-glow);
+            border-color: rgba(45, 212, 191, 0.45);
+            color: var(--accent-teal);
+            transform: scale(1.06);
+            box-shadow: 0 0 15px rgba(20, 184, 166, 0.25);
+        }
+
+        /* Animated Floating Glass Menu */
+        .dropdown-menu-popover {
+            background: var(--dropdown-bg) !important;
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--dropdown-border) !important;
+            border-radius: 16px !important;
+            box-shadow: var(--dropdown-shadow) !important;
+            padding: 10px !important;
+            min-width: 220px;
+            z-index: 1060 !important;
+            margin-top: 8px !important;
+            transform-origin: top right;
+        }
+
+        .dropdown-menu-popover.show {
+            animation: popoverFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes popoverFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .popover-header-title {
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            padding: 6px 12px 10px 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .popover-item {
+            color: var(--text-primary) !important;
+            font-size: 0.86rem;
+            font-weight: 600;
+            padding: 9px 12px !important;
+            border-radius: var(--radius-md) !important;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.18s ease;
+            text-decoration: none;
+        }
+
+        .popover-item:hover {
+            background: rgba(148, 163, 184, 0.16) !important;
+            color: var(--text-heading) !important;
+            transform: translateX(4px);
+        }
+
+        .popover-item-danger:hover {
+            background: rgba(220, 38, 38, 0.16) !important;
+            color: #f87171 !important;
+        }
+
+        .popover-icon-box {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .popover-icon-blue { background: rgba(2, 132, 199, 0.25); color: #38bdf8; }
+        .popover-icon-teal { background: rgba(20, 184, 166, 0.25); color: #2dd4bf; }
+        .popover-icon-gold { background: rgba(217, 119, 6, 0.25); color: #fbbf24; }
+        .popover-icon-purple { background: rgba(147, 51, 234, 0.25); color: #c084fc; }
+        .popover-icon-danger { background: rgba(220, 38, 38, 0.25); color: #f87171; }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= FLASH MESSAGES ================= -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show mb-3" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- ================= FLOATING NAVBAR ================= -->
+    <nav class="navbar navbar-custom">
+        <div class="container">
+            <div class="d-flex align-items-center gap-3">
+                <!-- 3-Lines Offcanvas Drawer Toggle Button -->
+                <button class="menu-toggle-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarDrawer" title="Open Navigation Menu">
+                    <i class="bi bi-list"></i>
+                </button>
+
+                <!-- Brand Logo -->
+                <a class="brand-logo" href="/">
+                    <div class="brand-icon">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <span>SecureVault</span>
+                </a>
+            </div>
+
+            <!-- Right Navbar Tools -->
+            <div class="d-flex align-items-center gap-2">
+                <a href="/upload" class="btn-nav-action btn-nav-teal">
+                    <i class="bi bi-cloud-arrow-up-fill"></i> + Upload
+                </a>
+
+                <!-- Theme Toggle Button -->
+                <button type="button" id="themeToggleBtn" class="theme-icon-btn" onclick="toggleTheme()" title="Toggle Theme">
+                    <i class="bi bi-sun-fill" id="themeIcon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ================= LEFT OFFCANVAS SIDEBAR DRAWER ================= -->
+    <div class="offcanvas offcanvas-start offcanvas-custom" tabindex="-1" id="sidebarDrawer" aria-labelledby="sidebarDrawerLabel">
+        <div class="sidebar-header d-flex align-items-center justify-content-between">
+            <a class="brand-logo" href="/">
+                <div class="brand-icon">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <span>SecureVault</span>
+            </a>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+
+        <div class="offcanvas-body p-4">
+            <!-- User Info Summary -->
+            <div class="sidebar-user-card">
+                <div class="sidebar-avatar">
+                    {{ user_name[:2].upper() if user_name else 'SV' }}
+                </div>
+                <div class="overflow-hidden">
+                    <div class="fw-bold text-heading text-truncate fs-7">{{ user_name }}</div>
+                    <div class="text-muted-custom fs-8 font-mono">Encrypted Session</div>
+                </div>
+            </div>
+
+            <!-- Theme Mode Switch Item -->
+            <div class="sidebar-nav-item" onclick="toggleTheme()" style="cursor: pointer;">
+                <i class="bi bi-moon-stars-fill text-teal" id="sidebarThemeIcon"></i>
+                <span id="sidebarThemeText">Toggle Light / Dark Mode</span>
+            </div>
+
+            <div class="sidebar-section-title">Navigation Options</div>
+
+            <a href="/dashboard" class="sidebar-nav-item active">
+                <i class="bi bi-grid-fill me-1 text-teal"></i> Dashboard
+            </a>
+
+            <a href="{{ url_for('security_dashboard') }}" class="sidebar-nav-item">
+                <i class="bi bi-shield-check me-1 text-info"></i> Security Center
+            </a>
+
+            <a href="/upload" class="sidebar-nav-item">
+                <i class="bi bi-cloud-arrow-up-fill me-1 text-teal"></i> Upload File
+            </a>
+
+            <a href="/decrypt" class="sidebar-nav-item">
+                <i class="bi bi-unlock-fill me-1 text-gold"></i> Decrypt File
+            </a>
+
+            <a href="/recycle-bin" class="sidebar-nav-item">
+                <i class="bi bi-trash-fill me-1 text-danger"></i> Recycle Bin
+            </a>
+
+            <a href="/shared-files" class="sidebar-nav-item">
+                <i class="bi bi-share-fill me-1 text-primary"></i> Shared Files
+            </a>
+
+            <a href="{{ url_for('manage_shares') }}" class="sidebar-nav-item">
+                <i class="bi bi-shield-shaded me-1 text-warning"></i> Manage Shared Files
+            </a>
+
+            <div class="sidebar-section-title">Account & Security</div>
+
+            <a href="/profile" class="sidebar-nav-item">
+                <i class="bi bi-person-fill me-1 text-teal"></i> My Profile
+            </a>
+
+            {% if is_admin %}
+                <a href="{{ url_for('admin_dashboard') }}" class="sidebar-nav-item text-gold">
+                    <i class="bi bi-shield-lock-fill me-1 text-gold"></i> Admin Panel
+                </a>
+            {% endif %}
+
+            <hr class="my-3 border-secondary border-opacity-20">
+
+            <a href="/logout" class="sidebar-nav-item text-danger">
+                <i class="bi bi-box-arrow-right me-1 text-danger"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- ================= DASHBOARD HERO HEADER ================= -->
+    <div class="container mt-4">
+        <div class="hero-banner">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="user-avatar">
+                        {{ user_name[:2].upper() if user_name else 'SV' }}
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h2 class="mb-0 fw-bold fs-3 text-heading">Welcome back, {{ user_name }}</h2>
+                            <span class="security-badge-pill">
+                                <span class="pulse-dot"></span> Protected
+                            </span>
+                        </div>
+                        <p class="text-secondary-custom mb-0 small">
+                            Hybrid Cryptography Engine Active — AES-256 & RSA Client-side Encryption standard.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a href="/upload" class="btn-nav-action btn-nav-teal px-4 py-2">
+                        <i class="bi bi-plus-lg"></i> New Storage Item
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= METRICS & STORAGE ================= -->
+    <div class="container mt-4">
+        <div class="row g-4">
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper icon-teal">
+                        <i class="bi bi-files"></i>
+                    </div>
+                    <div class="stat-label">Total Vault Files</div>
+                    <div class="stat-value">{{ total_files }}</div>
+                    <div class="text-secondary-custom small mt-2 d-flex align-items-center gap-1">
+                        <i class="bi bi-shield-check text-teal"></i> Fully Encrypted
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper icon-blue">
+                        <i class="bi bi-database-fill-gear"></i>
+                    </div>
+                    <div class="stat-label">Storage Consumed</div>
+                    <div class="stat-value">{{ storage_used }}</div>
+                    <div class="text-secondary-custom small mt-2 d-flex align-items-center gap-1">
+                        <i class="bi bi-arrow-up-right text-info"></i> {{ storage_percentage }}% of total limit
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper icon-purple">
+                        <i class="bi bi-shield-fill-check"></i>
+                    </div>
+                    <div class="stat-label">Security Health</div>
+                    <div class="stat-value text-teal">100%</div>
+                    <div class="text-secondary-custom small mt-2 d-flex align-items-center gap-1">
+                        <i class="bi bi-lock-fill text-teal"></i> Zero Knowledge Architecture
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="stat-label mb-0">Storage Allocation</div>
+                        <span class="badge bg-body border border-secondary text-secondary-custom font-mono fs-7">
+                            {{ storage_percentage }}%
+                        </span>
+                    </div>
+
+                    {% if storage_percentage <= 50 %}
+                        {% set bar_color = "bg-success" %}
+                    {% elif storage_percentage <= 80 %}
+                        {% set bar_color = "bg-warning" %}
+                    {% else %}
+                        {% set bar_color = "bg-danger" %}
+                    {% endif %}
+
+                    <div class="progress-container">
+                        <div class="progress-bar-custom {{ bar_color }}" style="width: {{ storage_percentage }}%;"></div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between text-secondary-custom fs-7">
+                        <span>Used: <strong class="text-heading">{{ storage_used }}</strong></span>
+                        <span>Limit: <strong class="text-heading">{{ storage_limit }}</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MAIN SECTION: SEARCH & FILE TABLE ================= -->
+    <div class="container mt-4 mb-5">
+
+        <!-- Activity Timeline Dropdown/Collapsible -->
+        <div class="accordion mb-4" id="activityAccordion">
+            <div class="accordion-item border-0 rounded-4 overflow-hidden" style="background: var(--bg-card) !important; border: 1px solid var(--border-subtle) !important;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed py-3 px-4 fw-semibold fs-6" type="button" data-bs-toggle="collapse" data-bs-target="#activityCollapse">
+                        <i class="bi bi-clock-history text-teal me-2"></i> Recent Security & Access Activities
+                    </button>
+                </h2>
+                <div id="activityCollapse" class="accordion-collapse collapse" data-bs-parent="#activityAccordion">
+                    <div class="accordion-body p-4 pt-2">
+                        {% if activities %}
+                            <div class="row g-2">
+                                {% for activity in activities %}
+                                    <div class="col-12 col-md-6">
+                                        <div class="activity-item">
+                                            <div class="activity-icon-badge">
+                                                <i class="bi bi-activity"></i>
+                                            </div>
+                                            <div class="overflow-hidden me-auto">
+                                                <div class="activity-title text-truncate">
+                                                    <strong class="text-teal">{{ activity.action }}</strong> — <span class="text-heading">{{ activity.filename }}</span>
+                                                </div>
+                                                <div class="activity-time mt-1">
+                                                    <i class="bi bi-clock me-1"></i>{{ activity.timestamp.strftime("%d-%m-%Y %H:%M") }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-secondary-custom small mb-0">No recent activity logged in this session.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEARCH AND SORT CONTROL BAR -->
+        <div class="filter-card mb-4">
+            <form method="GET" action="/dashboard" class="row g-3 align-items-center">
+                <div class="col-12 col-md-5 col-lg-6">
+                    <div class="input-group">
+                        <span class="input-group-text border-end-0 text-muted-custom" style="background: var(--bg-input) !important; border-color: var(--border-subtle) !important;">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input
+                            type="text"
+                            name="search"
+                            class="form-control custom-input border-start-0 ps-0"
+                            placeholder="Search files by name..."
+                            value="{{ request.args.get('search', '') }}">
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3 col-lg-2">
+                    <select name="file_type" class="form-select custom-select">
+                        <option value="">All Formats</option>
+                        <option value=".pdf" {% if request.args.get('file_type') == '.pdf' %}selected{% endif %}>PDF Document</option>
+                        <option value=".docx" {% if request.args.get('file_type') == '.docx' %}selected{% endif %}>DOCX Word</option>
+                        <option value=".txt" {% if request.args.get('file_type') == '.txt' %}selected{% endif %}>TXT Text</option>
+                        <option value=".png" {% if request.args.get('file_type') == '.png' %}selected{% endif %}>PNG Image</option>
+                        <option value=".jpg" {% if request.args.get('file_type') == '.jpg' %}selected{% endif %}>JPG Image</option>
+                        <option value=".jpeg" {% if request.args.get('file_type') == '.jpeg' %}selected{% endif %}>JPEG Image</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-2 col-lg-2">
+                    <select name="sort" class="form-select custom-select">
+                        <option value="date" {% if request.args.get('sort', 'date') == 'date' %}selected{% endif %}>Newest First</option>
+                        <option value="name" {% if request.args.get('sort') == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="size" {% if request.args.get('sort') == 'size' %}selected{% endif %}>File Size</option>
+                        <option value="downloads" {% if request.args.get('sort') == 'downloads' %}selected{% endif %}>Downloads</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-2 col-lg-2 d-grid">
+                    <button class="btn-nav-action btn-nav-teal justify-content-center py-2" type="submit">
+                        Apply Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- UPLOADED FILES DATA TABLE CARD -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-folder-symlink-fill text-teal fs-5"></i>
+                    <h5 class="mb-0 text-heading fw-bold fs-6">Encrypted Files Repository</h5>
+                </div>
+                <span class="badge bg-body text-secondary-custom border border-secondary px-3 py-2 rounded-pill font-mono">
+                    {{ files|length if files else 0 }} items
+                </span>
+            </div>
+
+            <div class="card-body p-0">
+                {% if files %}
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width: 6%">ID</th>
+                                <th style="width: 32%">Original File</th>
+                                <th style="width: 20%">Encrypted Hash</th>
+                                <th style="width: 16%">Upload Timestamp</th>
+                                <th style="width: 12%">Size</th>
+                                <th style="width: 10%">Integrity</th>
+                                <th style="width: 4%" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in files %}
+                            <tr>
+                                <td class="font-mono text-muted-custom fs-7">#{{ file.id }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <!-- Dynamic JS Icon container -->
+                                        <div class="file-icon-box file-icon-default" data-filename="{{ file.filename }}">
+                                            <i class="bi bi-file-earmark-lock-fill"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold text-heading file-name-text">{{ file.filename }}</div>
+                                            <div class="text-muted-custom fs-8">Client Encrypted</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="encrypted-chip" 
+                                          title="Click to copy full encrypted string"
+                                          onclick="navigator.clipboard.writeText('{{ file.encrypted_filename }}'); alert('Encrypted hash copied!');">
+                                        <i class="bi bi-key-fill text-teal"></i>
+                                        <span>{{ file.encrypted_filename }}</span>
+                                    </span>
+                                </td>
+                                <td class="text-secondary-custom fs-7">
+                                    <i class="bi bi-calendar3 me-1 fs-8"></i>
+                                    {{ file.upload_date.strftime("%d-%m-%Y %H:%M") }}
+                                </td>
+                                <td class="font-mono fs-7">
+                                    {% if file.file_size >= 1024 * 1024 %}
+                                        <span class="text-primary">{{ "%.2f"|format(file.file_size / (1024 * 1024)) }} MB</span>
+                                    {% elif file.file_size >= 1024 %}
+                                        <span class="text-info">{{ "%.2f"|format(file.file_size / 1024) }} KB</span>
+                                    {% else %}
+                                        <span class="text-secondary-custom">{{ file.file_size }} B</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if file.integrity_status == "Verified" %}
+                                    <span class="badge bg-success">
+                                        Verified
+                                    </span>
+                                    {% elif file.integrity_status == "Tampered" %}
+                                    <span class="badge bg-danger">
+                                        Tampered
+                                    </span>
+                                    {% elif file.integrity_status == "Missing" %}
+                                    <span class="badge bg-warning text-dark">
+                                        Missing
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">
+                                        Unknown
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <!-- High-End Glass Action Popover -->
+                                    <div class="dropdown text-end">
+                                        <button class="btn btn-action-dots border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="File Actions">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-popover">
+                                            <div class="popover-header-title">
+                                                <span>File Actions</span>
+                                                <i class="bi bi-shield-lock text-teal"></i>
+                                            </div>
+
+                                            <a class="popover-item" href="/file/{{ file.id }}">
+                                                <div class="popover-icon-box popover-icon-blue">
+                                                    <i class="bi bi-info-circle-fill"></i>
+                                                </div>
+                                                <span>File Details</span>
+                                            </a>
+
+                                            <a class="popover-item" href="/file/{{ file.id }}/versions">
+                                                <div class="popover-icon-box popover-icon-teal">
+                                                    <i class="bi bi-clock-history"></i>
+                                                </div>
+                                                <span>Version History</span>
+                                            </a>
+
+                                            <a class="popover-item" href="/decrypt?file={{ file.encrypted_filename }}">
+                                                <div class="popover-icon-box popover-icon-gold">
+                                                    <i class="bi bi-unlock-fill"></i>
+                                                </div>
+                                                <span>Decrypt File</span>
+                                            </a>
+
+                                            <a class="popover-item" href="/download/{{ file.encrypted_filename }}">
+                                                <div class="popover-icon-box popover-icon-teal">
+                                                    <i class="bi bi-download"></i>
+                                                </div>
+                                                <span>Download File</span>
+                                            </a>
+
+                                            <a class="popover-item" href="/share/{{ file.id }}">
+                                                <div class="popover-icon-box popover-icon-purple">
+                                                    <i class="bi bi-share-fill"></i>
+                                                </div>
+                                                <span>Share Access</span>
+                                            </a>
+
+                                            <hr class="my-2 border-secondary border-opacity-20">
+
+                                            <a class="popover-item popover-item-danger" 
+                                               href="/delete/{{ file.id }}"
+                                               onclick="return confirm('Are you sure you want to delete {{ file.filename }}?');">
+                                                <div class="popover-icon-box popover-icon-danger">
+                                                    <i class="bi bi-trash3-fill"></i>
+                                                </div>
+                                                <span>Delete File</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-5 text-center">
+                    <div class="mb-3 text-muted-custom display-4">
+                        <i class="bi bi-folder-x"></i>
+                    </div>
+                    <h5 class="text-heading fw-bold mb-1">No Encrypted Files Found</h5>
+                    <p class="text-secondary-custom small mb-4">Your vault is currently empty or no items match your search filter.</p>
+                    <a href="/upload" class="btn-nav-action btn-nav-teal px-4 py-2">
+                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Upload Your First File
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="text-center py-4 border-top border-secondary border-opacity-10 text-secondary-custom fs-7">
+        <div class="container">
+            <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
+                <div>
+                    <strong class="text-heading">SecureVault</strong> © 2026 — Hybrid Cryptography File Vault
+                </div>
+                <div class="d-flex align-items-center gap-3 text-muted-custom fs-8">
+                    <span><i class="bi bi-shield-lock-fill text-teal me-1"></i> Zero-Knowledge Architecture</span>
+                    <span><i class="bi bi-cpu-fill text-info me-1"></i> Client-Side AES-256</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Dark / Light Theme Switching & Icon Handler -->
+    <script>
+        function applyThemeUI(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const themeIcon = document.getElementById('themeIcon');
+            const sidebarThemeIcon = document.getElementById('sidebarThemeIcon');
+            const sidebarThemeText = document.getElementById('sidebarThemeText');
+
+            if (themeIcon) {
+                if (theme === 'light') {
+                    themeIcon.className = 'bi bi-sun-fill text-warning';
+                    if (sidebarThemeIcon) sidebarThemeIcon.className = 'bi bi-sun-fill text-warning';
+                    if (sidebarThemeText) sidebarThemeText.textContent = 'Light Mode (Click for Dark)';
+                } else {
+                    themeIcon.className = 'bi bi-moon-stars-fill text-teal';
+                    if (sidebarThemeIcon) sidebarThemeIcon.className = 'bi bi-moon-stars-fill text-teal';
+                    if (sidebarThemeText) sidebarThemeText.textContent = 'Dark Mode (Click for Light)';
+                }
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyThemeUI(newTheme);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            applyThemeUI(currentTheme);
+
+            // Dynamic File Format Icon Mapper
+            const iconBoxes = document.querySelectorAll(".file-icon-box");
+            iconBoxes.forEach(box => {
+                const filename = box.getAttribute("data-filename") || "";
+                const ext = filename.split('.').pop().toLowerCase();
+
+                let iconClass = "bi-file-earmark-lock-fill";
+                let styleClass = "file-icon-default";
+
+                if (["zip", "rar", "tar", "gz", "7z", "tgz"].includes(ext)) {
+                    iconClass = "bi-file-earmark-zip-fill";
+                    styleClass = "file-icon-zip";
+                } else if (["png", "jpg", "jpeg", "webp", "gif", "svg", "bmp"].includes(ext)) {
+                    iconClass = "bi-file-earmark-image-fill";
+                    styleClass = "file-icon-img";
+                } else if (["pdf"].includes(ext)) {
+                    iconClass = "bi-file-earmark-pdf-fill";
+                    styleClass = "file-icon-pdf";
+                } else if (["txt", "md", "rtf", "doc", "docx"].includes(ext)) {
+                    iconClass = "bi-file-earmark-text-fill";
+                    styleClass = "file-icon-txt";
+                } else if (["js", "ts", "html", "css", "py", "go", "json", "xml", "rs", "cpp", "c", "sh", "sql"].includes(ext)) {
+                    iconClass = "bi-file-earmark-code-fill";
+                    styleClass = "file-icon-code";
+                } else if (["mp3", "wav", "m4a", "ogg", "flac"].includes(ext)) {
+                    iconClass = "bi-file-earmark-music-fill";
+                    styleClass = "file-icon-audio";
+                } else if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) {
+                    iconClass = "bi-file-earmark-play-fill";
+                    styleClass = "file-icon-video";
+                } else if (["xls", "xlsx", "csv", "tsv"].includes(ext)) {
+                    iconClass = "bi-file-earmark-spreadsheet-fill";
+                    styleClass = "file-icon-sheet";
+                }
+
+                box.className = `file-icon-box ${styleClass}`;
+                box.innerHTML = `<i class="bi ${iconClass}"></i>`;
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control Center — SecureVault</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Typography: Plus Jakarta Sans (UI & Display), JetBrains Mono (Data & Hashes) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Immediate Theme Initialization Script (Prevents Flickering) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const theme = savedTheme ? savedTheme : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
+    <style>
+        /* ================= THEME COLOR VARIABLES ================= */
+        :root, [data-theme="dark"] {
+            --bg-body: #060913;
+            --bg-card: rgba(15, 23, 42, 0.55);
+            --bg-card-hover: rgba(30, 41, 59, 0.65);
+            --bg-glass: rgba(9, 13, 22, 0.75);
+            --bg-input: rgba(9, 13, 22, 0.6);
+            --bg-header: rgba(15, 23, 42, 0.4);
+
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.18);
+
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --text-heading: #ffffff;
+
+            --bg-gradient-overlay: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20, 184, 166, 0.12), transparent),
+                radial-gradient(circle at 100% 40%, rgba(99, 102, 241, 0.08), transparent 40%),
+                radial-gradient(circle at 0% 80%, rgba(168, 85, 247, 0.06), transparent 40%),
+                radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+
+            --hero-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.3) 100%);
+            --brand-gradient: linear-gradient(135deg, #ffffff 30%, var(--accent-gold) 100%);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-card-hover: rgba(255, 255, 255, 0.98);
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --bg-input: #ffffff;
+            --bg-header: rgba(241, 245, 249, 0.8);
+
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --border-strong: rgba(0, 0, 0, 0.18);
+
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --text-heading: #020617;
+
+            --bg-gradient-overlay: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(245, 158, 11, 0.1), transparent),
+                radial-gradient(circle at 100% 40%, rgba(99, 102, 241, 0.05), transparent 40%),
+                radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+
+            --hero-bg: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            --brand-gradient: linear-gradient(135deg, #0f172a 30%, #d97706 100%);
+        }
+
+        /* Brand Accent System */
+        :root {
+            --accent-teal: #14b8a6;
+            --accent-teal-glow: rgba(20, 184, 166, 0.15);
+            
+            --accent-blue: #0284c7;
+            --accent-blue-glow: rgba(2, 132, 199, 0.15);
+
+            --accent-purple: #9333ea;
+            --accent-purple-glow: rgba(147, 51, 234, 0.15);
+
+            --accent-gold: #d97706;
+            --accent-gold-glow: rgba(217, 119, 6, 0.15);
+
+            --accent-danger: #dc2626;
+            --accent-danger-glow: rgba(220, 38, 38, 0.15);
+
+            --accent-success: #10b981;
+            --accent-success-glow: rgba(16, 185, 129, 0.15);
+
+            --radius-xl: 20px;
+            --radius-lg: 14px;
+            --radius-md: 10px;
+            --radius-pill: 9999px;
+
+            --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        /* Body & Layout */
+        body {
+            background-color: var(--bg-body) !important;
+            background-image: var(--bg-gradient-overlay);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px;
+            background-attachment: fixed;
+            color: var(--text-primary) !important;
+            font-family: var(--font-sans) !important;
+            min-height: 100vh;
+            line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Responsive text colors in Light vs Dark mode */
+        [data-theme="light"] .text-white {
+            color: var(--text-heading) !important;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: var(--radius-pill);
+        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.5); }
+
+        /* ================= FLOATING NAVBAR ================= */
+        .navbar-custom {
+            background: var(--bg-glass) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 12px 0 !important;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .brand-logo {
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.03em;
+            background: var(--brand-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(239, 68, 68, 0.1));
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-gold);
+            font-size: 1.1rem;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+        }
+
+        .nav-btn {
+            font-size: 0.82rem !important;
+            font-weight: 600 !important;
+            padding: 8px 16px !important;
+            border-radius: var(--radius-pill) !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-btn-ghost {
+            background: rgba(148, 163, 184, 0.08);
+            color: var(--text-primary) !important;
+            border-color: var(--border-subtle);
+        }
+        .nav-btn-ghost:hover {
+            background: rgba(148, 163, 184, 0.18);
+            color: var(--text-heading) !important;
+            border-color: var(--border-strong);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn-teal {
+            background: var(--accent-teal);
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 14px rgba(20, 184, 166, 0.25);
+        }
+        .nav-btn-teal:hover {
+            background: #0d9488;
+            box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn-gold {
+            background: var(--accent-gold-glow);
+            color: var(--accent-gold) !important;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+        .nav-btn-gold:hover {
+            background: var(--accent-gold);
+            color: #ffffff !important;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* ================= HERO HEADER ================= */
+        .hero-banner {
+            background: var(--hero-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: background 0.3s ease;
+        }
+
+        .admin-badge-pill {
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: var(--accent-gold);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: var(--radius-pill);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        /* ================= STAT CARDS ================= */
+        .stat-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+        .stat-card:hover {
+            border-color: var(--border-strong);
+            transform: translateY(-3px);
+            background: var(--bg-card-hover);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon-wrapper {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 14px;
+        }
+
+        .icon-blue { background: var(--accent-blue-glow); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.2); }
+        .icon-teal { background: var(--accent-teal-glow); color: var(--accent-teal); border: 1px solid rgba(20, 184, 166, 0.2); }
+        .icon-gold { background: var(--accent-gold-glow); color: var(--accent-gold); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .icon-purple { background: var(--accent-purple-glow); color: var(--accent-purple); border: 1px solid rgba(168, 85, 247, 0.2); }
+        .icon-danger { background: var(--accent-danger-glow); color: var(--accent-danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 1.9rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-heading);
+        }
+
+        /* ================= INPUTS & SEARCH ================= */
+        .custom-input {
+            background: var(--bg-input) !important;
+            border: 1px solid var(--border-subtle) !important;
+            color: var(--text-primary) !important;
+            font-size: 0.88rem;
+            border-radius: var(--radius-md) !important;
+            padding: 10px 16px !important;
+            transition: all 0.2s ease;
+        }
+        .custom-input:focus {
+            border-color: var(--accent-gold) !important;
+            box-shadow: 0 0 0 3px var(--accent-gold-glow) !important;
+            outline: none;
+        }
+        .custom-input::placeholder { color: var(--text-muted); }
+
+        /* ================= TABLE CARD ================= */
+        .table-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-card-header {
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--bg-header);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-custom {
+            margin-bottom: 0 !important;
+            vertical-align: middle;
+        }
+
+        .table-custom thead th {
+            background: var(--bg-header) !important;
+            color: var(--text-muted) !important;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 14px 24px !important;
+            border-bottom: 1px solid var(--border-subtle) !important;
+            white-space: nowrap;
+        }
+
+        .table-custom tbody tr {
+            transition: all 0.15s ease;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .table-custom tbody tr:last-child {
+            border-bottom: none;
+        }
+        .table-custom tbody tr:hover {
+            background-color: var(--bg-card-hover) !important;
+        }
+
+        .table-custom td {
+            padding: 16px 24px !important;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            white-space: nowrap;
+            background: transparent !important;
+        }
+
+        .user-avatar-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent-gold-glow);
+            color: var(--accent-gold);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .badge-admin {
+            background: var(--accent-gold-glow) !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+            color: var(--accent-gold) !important;
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 4px 10px !important;
+            border-radius: var(--radius-pill) !important;
+        }
+
+        .badge-user {
+            background: rgba(148, 163, 184, 0.12) !important;
+            border: 1px solid var(--border-subtle) !important;
+            color: var(--text-muted) !important;
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 4px 10px !important;
+            border-radius: var(--radius-pill) !important;
+        }
+
+        /* Action Buttons */
+        .btn-action-sm {
+            padding: 5px 12px !important;
+            font-size: 0.75rem !important;
+            font-weight: 600;
+            border-radius: var(--radius-md) !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+        }
+
+        /* ================= CHART CARDS ================= */
+        .chart-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            height: 100%;
+        }
+
+        .chart-card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= FLOATING NAVBAR ================= -->
+    <nav class="navbar navbar-expand-xl navbar-custom">
+        <div class="container">
+            <a class="brand-logo" href="/">
+                <div class="brand-icon">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <span>SecureVault Admin</span>
+            </a>
+
+            <button class="navbar-toggler border-0 text-body" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+                <i class="bi bi-list fs-2"></i>
+            </button>
+
+            <div class="collapse navbar-collapse mt-3 mt-xl-0" id="navContent">
+                <div class="ms-auto d-flex flex-wrap align-items-center gap-2">
+                    <!-- Theme Toggle Button -->
+                    <button type="button" id="themeToggleBtn" class="nav-btn nav-btn-ghost me-xl-2" onclick="toggleTheme()">
+                        <i class="bi bi-moon-stars-fill text-gold" id="themeIcon"></i>
+                        <span id="themeText">Dark</span>
+                    </button>
+
+                    <a href="/dashboard" class="nav-btn nav-btn-ghost">
+                        <i class="bi bi-grid-fill"></i> User Dashboard
+                    </a>
+
+                    <a href="{{ url_for('admin_files') }}" class="nav-btn nav-btn-teal">
+                        <i class="bi bi-folder-fill"></i> Manage Files
+                    </a>
+                    
+                    <a href="{{ url_for('security_alerts') }}" class="btn btn-danger position-relative">
+                        🛡 Security Alerts
+
+                        {% if open_security_alerts > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
+                                {{ open_security_alerts }}
+                            </span>
+                        {% endif %}
+                    </a>
+
+                    <a href="{{ url_for('admin_activity_logs') }}"
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-clock-history me-1"></i>
+                        Activity Logs</a>
+
+                    <a href="{{ url_for('security_report') }}" class="btn btn-danger">
+                        Download Security Report (PDF)
+                    </a>
+
+                    <a href="{{ url_for('admin_audit_log') }}" class="nav-btn nav-btn-gold">
+                        <i class="bi bi-journal-text"></i> Audit Log
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ================= DASHBOARD HERO HEADER ================= -->
+    <div class="container mt-4">
+        <div class="hero-banner">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <h2 class="mb-0 fw-bold fs-3 text-heading">Admin Control Center</h2>
+                        <span class="admin-badge-pill">
+                            <i class="bi bi-shield-shaded me-1"></i> Global Admin Mode
+                        </span>
+                    </div>
+                    <p class="text-secondary mb-0 small">
+                        Monitor user accounts, system storage allocations, security audit logs, and vault analytics.
+                    </p>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{{ url_for('admin_files') }}" class="nav-btn nav-btn-teal py-2 px-3">
+                        <i class="bi bi-folder-symlink-fill"></i> Manage All Files
+                    </a>
+                    <a href="{{ url_for('admin_audit_log') }}" class="nav-btn nav-btn-gold py-2 px-3">
+                        <i class="bi bi-list-check"></i> Audit Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= STATISTICS GRID ================= -->
+    <div class="container mt-4">
+        <div class="row g-4">
+            <!-- Total Users -->
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-2.4" style="flex: 1 0 20%; min-width: 180px;">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper icon-blue">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-value">{{ total_users }}</div>
+                </div>
+            </div>
+
+            <!-- Total Files -->
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-2.4" style="flex: 1 0 20%; min-width: 180px;">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper icon-teal">
+                        <i class="bi bi-file-earmark-lock-fill"></i>
+                    </div>
+                    <div class="stat-label">Total Files</div>
+                    <div class="stat-value">{{ total_files }}</div>
+                </div>
+            </div>
+
+            <!-- Total Downloads -->
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-2.4" style="flex: 1 0 20%; min-width: 180px;">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper icon-gold">
+                        <i class="bi bi-download"></i>
+                    </div>
+                    <div class="stat-label">Total Downloads</div>
+                    <div class="stat-value">{{ total_downloads }}</div>
+                </div>
+            </div>
+
+            <!-- Total Activities -->
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-2.4" style="flex: 1 0 20%; min-width: 180px;">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper icon-purple">
+                        <i class="bi bi-activity"></i>
+                    </div>
+                    <div class="stat-label">System Activities</div>
+                    <div class="stat-value">{{ total_activities }}</div>
+                </div>
+            </div>
+
+            <!-- Storage Used -->
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-2.4" style="flex: 1 0 20%; min-width: 180px;">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper icon-danger">
+                        <i class="bi bi-hdd-stack-fill"></i>
+                    </div>
+                    <div class="stat-label">Storage Consumed</div>
+                    <div class="stat-value fs-4 mt-1">{{ storage }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= USER MANAGEMENT SECTION ================= -->
+    <div class="container mt-5">
+        <div class="table-card">
+            <div class="table-card-header flex-column flex-md-row align-items-md-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-people-fill text-gold fs-5"></i>
+                    <h5 class="mb-0 text-heading fw-bold fs-6">User Accounts & Directory</h5>
+                </div>
+
+                <div class="col-12 col-md-5 col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-text border-end-0 text-muted" style="background: var(--bg-input) !important; border-color: var(--border-subtle) !important;">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input
+                            type="text"
+                            id="searchUser"
+                            class="form-control custom-input border-start-0 ps-0"
+                            placeholder="Search by name or email...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width: 8%">User ID</th>
+                                <th style="width: 25%">Full Name</th>
+                                <th style="width: 30%">Email Address</th>
+                                <th style="width: 12%">Role</th>
+                                <th style="width: 10%">Files Uploaded</th>
+                                <th style="width: 15%" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for user in users %}
+                            <tr class="user-row">
+                                <td class="font-mono text-muted fs-7">#{{ user.id }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="user-avatar-badge">
+                                            {{ user.name[:2].upper() if user.name else 'U' }}
+                                        </div>
+                                        <span class="fw-semibold text-heading">{{ user.name }}</span>
+                                    </div>
+                                </td>
+                                <td class="font-mono fs-7">{{ user.email }}</td>
+                                <td>
+                                    {% if user.is_admin %}
+                                        <span class="badge-admin">
+                                            <i class="bi bi-shield-check me-1"></i> Admin
+                                        </span>
+                                    {% else %}
+                                        <span class="badge-user">User</span>
+                                    {% endif %}
+                                </td>
+                                <td class="font-mono fw-semibold">
+                                    {{ user_files[user.id] if user_files else "-" }}
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-end gap-1">
+                                        <a href="{{ url_for('admin_user_details', user_id=user.id) }}"
+                                           class="btn btn-outline-info btn-action-sm">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+
+                                        {% if not user.is_admin %}
+                                            <a href="{{ url_for('admin_unlock_user', user_id=user.id) }}"
+                                               class="btn btn-outline-success btn-action-sm"
+                                               onclick="return confirm('Unlock this user?')">
+                                                <i class="bi bi-unlock"></i> Unlock
+                                            </a>
+                                            <button class="btn btn-outline-secondary btn-action-sm" disabled>
+                                                Delete
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= ANALYTICS & CHARTS SECTION ================= -->
+    <div class="container mt-5 mb-5">
+        <div class="d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-bar-chart-line-fill text-gold fs-4"></i>
+            <h4 class="mb-0 fw-bold text-heading">Vault Analytics & Storage Metrics</h4>
+        </div>
+
+        <div class="row g-4">
+            <!-- File Types Distribution -->
+            <div class="col-12 col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-card-title">
+                        <i class="bi bi-pie-chart-fill text-teal"></i> File Distribution by Type
+                    </div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="fileTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Uploads Per User -->
+            <div class="col-12 col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-card-title">
+                        <i class="bi bi-bar-chart-fill text-blue"></i> Upload Volume Per User
+                    </div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="uploadsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Storage Consumption Per User -->
+            <div class="col-12">
+                <div class="chart-card">
+                    <div class="chart-card-title">
+                        <i class="bi bi-hdd-network-fill text-gold"></i> Storage Usage Per User (KB)
+                    </div>
+                    <div style="height: 320px; position: relative;">
+                        <canvas id="storageChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="text-center py-4 border-top border-secondary border-opacity-10 text-muted fs-7">
+        <div class="container">
+            <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
+                <div>
+                    <strong class="text-heading">SecureVault Admin</strong> © 2026 — Enterprise System Control
+                </div>
+                <div class="d-flex align-items-center gap-3 text-muted fs-8">
+                    <span><i class="bi bi-shield-check text-gold me-1"></i> Encrypted Audit Pipeline</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Table Search Filter Script -->
+    <script>
+        const searchInput = document.getElementById("searchUser");
+        if (searchInput) {
+            searchInput.addEventListener("keyup", function () {
+                const value = this.value.toLowerCase();
+                const rows = document.querySelectorAll(".user-row");
+                rows.forEach(row => {
+                    const text = row.innerText.toLowerCase();
+                    if (text.includes(value)) {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = "none";
+                    }
+                });
+            });
+        }
+    </script>
+
+    <!-- Chart.js Engine & Configuration -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script id="chart-data" type="application/json">
+{{ {
+    "fileTypes": file_types,
+    "uploadsPerUser": uploads_per_user,
+    "storagePerUser": storage_per_user
+} | tojson }}</script>
+<script>
+    const chartData = JSON.parse(
+        document.getElementById("chart-data").textContent
+    );
+
+    const fileTypes = chartData.fileTypes || {};
+    const uploadsPerUser = chartData.uploadsPerUser || {};
+    const storagePerUser = chartData.storagePerUser || {};
+
+    const colorPalette = [
+        '#14b8a6',
+        '#0284c7',
+        '#d97706',
+        '#9333ea',
+        '#ec4899',
+        '#10b981',
+        '#6366f1',
+        '#f43f5e',
+        '#eab308',
+        '#8b5cf6'
+    ];
+
+    const isDark =
+        document.documentElement.getAttribute('data-theme') !== 'light';
+
+    const gridColor = isDark
+        ? 'rgba(255, 255, 255, 0.08)'
+        : 'rgba(0, 0, 0, 0.08)';
+
+    const textColor = isDark
+        ? '#94a3b8'
+        : '#475569';
+
+    Chart.defaults.color = textColor;
+    Chart.defaults.font.family =
+        "'Plus Jakarta Sans', sans-serif";
+
+
+    // ================= FILE TYPE CHART =================
+
+    const fileTypeCanvas =
+        document.getElementById("fileTypeChart");
+
+    if (fileTypeCanvas) {
+
+        new Chart(fileTypeCanvas, {
+            type: "doughnut",
+
+            data: {
+                labels: Object.keys(fileTypes),
+
+                datasets: [{
+                    data: Object.values(fileTypes),
+
+                    backgroundColor: colorPalette,
+
+                    borderWidth: 2,
+
+                    borderColor:
+                        isDark
+                            ? '#0f172a'
+                            : '#ffffff'
+                }]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: {
+                        position: "right"
+                    }
+                }
+            }
+        });
+    }
+
+
+    // ================= UPLOADS PER USER =================
+
+    const uploadsCanvas =
+        document.getElementById("uploadsChart");
+
+    if (uploadsCanvas) {
+
+        new Chart(uploadsCanvas, {
+            type: "bar",
+
+            data: {
+                labels: Object.keys(uploadsPerUser),
+
+                datasets: [{
+                    label: "Uploads",
+
+                    data: Object.values(uploadsPerUser),
+
+                    backgroundColor:
+                        'rgba(2, 132, 199, 0.75)',
+
+                    borderColor: '#0284c7',
+
+                    borderWidth: 1,
+
+                    borderRadius: 6
+                }]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                scales: {
+
+                    x: {
+                        grid: {
+                            color: gridColor
+                        }
+                    },
+
+                    y: {
+                        grid: {
+                            color: gridColor
+                        },
+
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+
+    // ================= STORAGE PER USER =================
+
+    const storageCanvas =
+        document.getElementById("storageChart");
+
+    if (storageCanvas) {
+
+        new Chart(storageCanvas, {
+            type: "bar",
+
+            data: {
+                labels: Object.keys(storagePerUser),
+
+                datasets: [{
+                    label: "Storage (KB)",
+
+                    data: Object.values(storagePerUser),
+
+                    backgroundColor:
+                        'rgba(217, 119, 6, 0.75)',
+
+                    borderColor: '#d97706',
+
+                    borderWidth: 1,
+
+                    borderRadius: 6
+                }]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                scales: {
+
+                    x: {
+                        grid: {
+                            color: gridColor
+                        }
+                    },
+
+                    y: {
+                        grid: {
+                            color: gridColor
+                        },
+
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+
+    // ================= THEME =================
+
+    function applyThemeUI(theme) {
+
+        document.documentElement
+            .setAttribute('data-theme', theme);
+
+        const themeIcon =
+            document.getElementById('themeIcon');
+
+        const themeText =
+            document.getElementById('themeText');
+
+        if (themeIcon && themeText) {
+
+            if (theme === 'light') {
+
+                themeIcon.className =
+                    'bi bi-sun-fill text-warning';
+
+                themeText.textContent = 'Light';
+
+            } else {
+
+                themeIcon.className =
+                    'bi bi-moon-stars-fill text-gold';
+
+                themeText.textContent = 'Dark';
+            }
+        }
+    }
+
+
+    function toggleTheme() {
+
+        const currentTheme =
+            document.documentElement
+                .getAttribute('data-theme') || 'dark';
+
+        const newTheme =
+            currentTheme === 'dark'
+                ? 'light'
+                : 'dark';
+
+        localStorage.setItem(
+            'theme',
+            newTheme
+        );
+
+        applyThemeUI(newTheme);
+
+        location.reload();
+    }
+
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const currentTheme =
+                document.documentElement
+                    .getAttribute('data-theme') || 'dark';
+
+            applyThemeUI(currentTheme);
+        }
+    );
+</script>
+</body>
+
+</html>

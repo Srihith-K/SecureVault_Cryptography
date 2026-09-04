@@ -1,0 +1,160 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password — SecureVault</title>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #060913;
+            margin: 0;
+            padding: 40px 20px;
+            color: #f8fafc;
+        }
+
+        .email-card {
+            background-color: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            max-width: 580px;
+            margin: 0 auto;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .email-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 32px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 1.35rem;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(20, 184, 166, 0.2);
+            border: 1px solid rgba(20, 184, 166, 0.4);
+            border-radius: 10px;
+            display: inline-block;
+            line-height: 36px;
+            text-align: center;
+            color: #14b8a6;
+        }
+
+        .email-body {
+            padding: 36px 32px;
+            color: #cbd5e1;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .greeting {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+
+        .button-wrapper {
+            margin: 28px 0;
+            text-align: center;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 14px 32px;
+            background-color: #14b8a6;
+            color: #060913 !important;
+            text-decoration: none !important;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.02em;
+            box-shadow: 0 4px 14px rgba(20, 184, 166, 0.3);
+        }
+
+        .link-box {
+            background-color: rgba(6, 9, 19, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px 16px;
+            word-break: break-all;
+            font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+            font-size: 12px;
+            color: #38bdf8;
+            margin-top: 8px;
+        }
+
+        .footer {
+            padding: 20px 32px;
+            background-color: rgba(6, 9, 19, 0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 13px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .expiry-tag {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="email-card">
+        <!-- HEADER -->
+        <div class="email-header">
+            <div class="brand-badge">
+                <span class="brand-icon">🔐</span> SecureVault
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="email-body">
+            <h3 class="greeting">Hello {{ user.name }},</h3>
+
+            <p>
+                We received a security request to reset your SecureVault account password. Click the button below to authorize and create a new password.
+            </p>
+
+            <div class="button-wrapper">
+                <a class="button" href="{{ reset_link }}" target="_blank">
+                    Reset Password
+                </a>
+            </div>
+
+            <p style="margin-bottom: 6px;">
+                If the button above does not work, copy and paste this link into your browser:
+            </p>
+
+            <div class="link-box">
+                {{ reset_link }}
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <span class="expiry-tag">⏱ Note:</span> This password reset link will expire in <strong>30 minutes</strong>.<br>
+            If you did not request this change, please ignore this email.
+        </div>
+    </div>
+
+</body>
+
+</html>

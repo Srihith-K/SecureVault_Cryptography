@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Manage Shared Files</h2>
+
+<table class="table table-bordered">
+
+<tr>
+
+<th>File</th>
+
+<th>Shared With</th>
+
+<th>Date</th>
+
+<th>Action</th>
+
+</tr>
+
+{% for share,file,user in shares %}
+
+<tr>
+
+<td>{{ file.filename }}</td>
+
+<td>{{ user.email }}</td>
+
+<td>{{ share.shared_date }}</td>
+
+<td>
+
+<a
+class="btn btn-danger"
+
+href="{{ url_for('revoke_share',
+share_id=share.id) }}">
+
+Revoke
+
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}  

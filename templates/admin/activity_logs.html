@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+
+{% block title %}Activity Logs - SecureVault{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-clock-history me-2"></i>
+                Activity Logs
+            </h2>
+
+            <p class="text-muted mb-0">
+                Monitor user activities and security-related actions.
+            </p>
+        </div>
+
+        <a href="{{ url_for('admin_dashboard') }}"
+           class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Back to Dashboard
+        </a>
+
+    </div>
+
+
+    <!-- STATISTICS -->
+    <div class="row g-3 mb-4">
+
+        <!-- TOTAL -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <p class="text-muted mb-1">
+                                Total Activities
+                            </p>
+
+                            <h3 class="fw-bold mb-0">
+                                {{ total_activities }}
+                            </h3>
+                        </div>
+
+                        <div class="fs-1 text-primary">
+                            <i class="bi bi-activity"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-- LOGIN -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <p class="text-muted mb-1">
+                                Login Activities
+                            </p>
+
+                            <h3 class="fw-bold mb-0">
+                                {{ login_count }}
+                            </h3>
+                        </div>
+
+                        <div class="fs-1 text-success">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-- DOWNLOAD -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <p class="text-muted mb-1">
+                                Downloads
+                            </p>
+
+                            <h3 class="fw-bold mb-0">
+                                {{ download_count }}
+                            </h3>
+                        </div>
+
+                        <div class="fs-1 text-info">
+                            <i class="bi bi-download"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-- SHARES -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <p class="text-muted mb-1">
+                                Share Activities
+                            </p>
+
+                            <h3 class="fw-bold mb-0">
+                                {{ share_count }}
+                            </h3>
+                        </div>
+
+                        <div class="fs-1 text-warning">
+                            <i class="bi bi-share"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- SEARCH / FILTER -->
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-body">
+
+            <form method="GET"
+                  action="{{ url_for('admin_activity_logs') }}">
+
+                <div class="row g-3 align-items-end">
+
+                    <!-- SEARCH -->
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Search
+                        </label>
+
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ search }}"
+                            class="form-control"
+                            placeholder="Search action or filename..."
+                        >
+
+                    </div>
+
+
+                    <!-- ACTION -->
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold">
+                            Action
+                        </label>
+
+                        <select name="action"
+                                class="form-select">
+
+                            <option value="">
+                                All Actions
+                            </option>
+
+                            <option value="Login"
+                                {% if selected_action == "Login" %}selected{% endif %}>
+                                Login
+                            </option>
+
+                            <option value="Logout"
+                                {% if selected_action == "Logout" %}selected{% endif %}>
+                                Logout
+                            </option>
+
+                            <option value="Uploaded"
+                                {% if selected_action == "Uploaded" %}selected{% endif %}>
+                                Uploaded
+                            </option>
+
+                            <option value="Downloaded"
+                                {% if selected_action == "Downloaded" %}selected{% endif %}>
+                                Downloaded
+                            </option>
+
+                            <option value="Downloaded Shared File"
+                                {% if selected_action == "Downloaded Shared File" %}selected{% endif %}>
+                                Shared Download
+                            </option>
+
+                            <option value="Decrypted"
+                                {% if selected_action == "Decrypted" %}selected{% endif %}>
+                                Decrypted
+                            </option>
+
+                            <option value="Password Reset"
+                                {% if selected_action == "Password Reset" %}selected{% endif %}>
+                                Password Reset
+                            </option>
+
+                            <option value="Share"
+                                {% if selected_action == "Share" %}selected{% endif %}>
+                                Share
+                            </option>
+
+                            <option value="Moved to Recycle Bin"
+                                {% if selected_action == "Moved to Recycle Bin" %}selected{% endif %}>
+                                Recycle Bin
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- BUTTON -->
+                    <div class="col-md-2">
+
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+
+                            <i class="bi bi-search me-1"></i>
+                            Filter
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ACTIVITY TABLE -->
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-transparent py-3">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-list-ul me-2"></i>
+                    Recent Activities
+                </h5>
+
+                <span class="badge bg-secondary">
+                    {{ activities|length }} Records
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body p-0">
+
+            {% if activities %}
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th class="px-4">
+                                #
+                            </th>
+
+                            <th>
+                                User ID
+                            </th>
+
+                            <th>
+                                Action
+                            </th>
+
+                            <th>
+                                File
+                            </th>
+
+                            <th>
+                                Date & Time
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for activity in activities %}
+
+                        <tr>
+
+                            <!-- ID -->
+                            <td class="px-4 text-muted">
+                                #{{ activity.id }}
+                            </td>
+
+
+                            <!-- USER -->
+                            <td>
+
+                                <span class="badge bg-light text-dark border">
+                                    User #{{ activity.user_id }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- ACTION -->
+                            <td>
+
+                                {% if "Login" in activity.action %}
+
+                                    <span class="badge bg-success-subtle text-success">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i>
+                                        {{ activity.action }}
+                                    </span>
+
+                                {% elif "Logout" in activity.action %}
+
+                                    <span class="badge bg-secondary-subtle text-secondary">
+                                        <i class="bi bi-box-arrow-right me-1"></i>
+                                        {{ activity.action }}
+                                    </span>
+
+                                {% elif "Download" in activity.action %}
+
+                                    <span class="badge bg-info-subtle text-info">
+                                        <i class="bi bi-download me-1"></i>
+                                        {{ activity.action }}
+                                    </span>
+
+                                {% elif "Upload" in activity.action %}
+
+                                    <span class="badge bg-primary-subtle text-primary">
+                                        <i class="bi bi-cloud-arrow-up me-1"></i>
+                                        {{ activity.action }}
+                                    </span>
+
+                                {% elif "Share" in activity.action %}
+
+                                    <span class="badge bg-warning-subtle text-warning-emphasis">
+                                        <i class="bi bi-share me-1"></i>
+                                        {{ activity.action }}
+                                    </span>
+
+                                {% elif "Password" in activity.action %}
+
+                                    <span class="badge bg-danger-subtle text-danger">
+                                        <i class="bi bi-key me-1"></i>
+                                        {{ activity.action }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-light text-dark border">
+                                        {{ activity.action }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- FILE -->
+                            <td>
+
+                                {% if activity.filename %}
+
+                                    <span
+                                        class="text-truncate d-inline-block"
+                                        style="max-width: 280px;"
+                                        title="{{ activity.filename }}"
+                                    >
+                                        <i class="bi bi-file-earmark me-1"></i>
+                                        {{ activity.filename }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- TIME -->
+                            <td class="text-muted">
+
+                                {% if activity.timestamp %}
+
+                                    <i class="bi bi-calendar3 me-1"></i>
+
+                                    {{ activity.timestamp.strftime("%d %b %Y") }}
+
+                                    <br>
+
+                                    <small>
+                                        {{ activity.timestamp.strftime("%I:%M %p") }}
+                                    </small>
+
+                                {% else %}
+
+                                    —
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <!-- EMPTY STATE -->
+
+            <div class="text-center py-5">
+
+                <div class="fs-1 text-muted mb-3">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+
+                <h5 class="fw-semibold">
+                    No activities found
+                </h5>
+
+                <p class="text-muted mb-0">
+                    There are no activity records matching your search.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

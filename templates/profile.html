@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile — SecureVault</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Typography: Plus Jakarta Sans (UI & Display), JetBrains Mono (Data & Hashes) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Immediate Theme Initialization Script (Prevents Flickering) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const theme = savedTheme ? savedTheme : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
+    <style>
+        /* ================= THEME COLOR VARIABLES ================= */
+        :root, [data-theme="dark"] {
+            --bg-body: #060913;
+            --bg-card: rgba(15, 23, 42, 0.55);
+            --bg-card-hover: rgba(30, 41, 59, 0.65);
+            --bg-glass: rgba(9, 13, 22, 0.75);
+            --bg-input: rgba(9, 13, 22, 0.6);
+            --bg-header: rgba(15, 23, 42, 0.4);
+
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.18);
+
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --text-heading: #ffffff;
+
+            --bg-gradient-overlay: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20, 184, 166, 0.12), transparent),
+                radial-gradient(circle at 100% 40%, rgba(99, 102, 241, 0.08), transparent 40%),
+                radial-gradient(circle at 0% 80%, rgba(168, 85, 247, 0.06), transparent 40%),
+                radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+
+            --hero-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.3) 100%);
+            --brand-gradient: linear-gradient(135deg, #ffffff 30%, var(--accent-teal) 100%);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-card-hover: rgba(255, 255, 255, 0.98);
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --bg-input: #ffffff;
+            --bg-header: rgba(241, 245, 249, 0.8);
+
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --border-strong: rgba(0, 0, 0, 0.18);
+
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --text-heading: #020617;
+
+            --bg-gradient-overlay: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20, 184, 166, 0.1), transparent),
+                radial-gradient(circle at 100% 40%, rgba(99, 102, 241, 0.05), transparent 40%),
+                radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+
+            --hero-bg: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            --brand-gradient: linear-gradient(135deg, #0f172a 30%, #0d9488 100%);
+        }
+
+        /* Brand Accent System */
+        :root {
+            --accent-teal: #14b8a6;
+            --accent-teal-glow: rgba(20, 184, 166, 0.15);
+            
+            --accent-blue: #0284c7;
+            --accent-blue-glow: rgba(2, 132, 199, 0.15);
+
+            --accent-purple: #9333ea;
+            --accent-purple-glow: rgba(147, 51, 234, 0.15);
+
+            --accent-gold: #d97706;
+            --accent-gold-glow: rgba(217, 119, 6, 0.15);
+
+            --accent-success: #10b981;
+
+            --radius-xl: 20px;
+            --radius-lg: 14px;
+            --radius-md: 10px;
+            --radius-pill: 9999px;
+
+            --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        /* Ambient background */
+        body {
+            background-color: var(--bg-body) !important;
+            background-image: var(--bg-gradient-overlay);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px;
+            background-attachment: fixed;
+            color: var(--text-primary) !important;
+            font-family: var(--font-sans) !important;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Responsive text colors in Light vs Dark mode */
+        [data-theme="light"] .text-white {
+            color: var(--text-heading) !important;
+        }
+
+        /* ================= FLOATING NAVBAR ================= */
+        .navbar-custom {
+            background: var(--bg-glass) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 12px 0 !important;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .brand-logo {
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.03em;
+            background: var(--brand-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(56, 189, 248, 0.1));
+            border: 1px solid rgba(20, 184, 166, 0.4);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-teal);
+            font-size: 1.1rem;
+            box-shadow: 0 0 15px rgba(20, 184, 166, 0.2);
+        }
+
+        .nav-btn {
+            font-size: 0.82rem !important;
+            font-weight: 600 !important;
+            padding: 8px 16px !important;
+            border-radius: var(--radius-pill) !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-btn-ghost {
+            background: rgba(148, 163, 184, 0.08);
+            color: var(--text-primary) !important;
+            border-color: var(--border-subtle);
+        }
+        .nav-btn-ghost:hover {
+            background: rgba(148, 163, 184, 0.18);
+            color: var(--text-heading) !important;
+            border-color: var(--border-strong);
+            transform: translateY(-1px);
+        }
+
+        /* ================= PROFILE CARD CONTAINER ================= */
+        .profile-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            max-width: 680px;
+            margin: 40px auto;
+        }
+
+        .profile-card-header {
+            padding: 40px 32px 32px 32px;
+            background: var(--bg-header);
+            border-bottom: 1px solid var(--border-subtle);
+            text-align: center;
+        }
+
+        .profile-avatar-large{
+    width:140px;
+    height:140px;
+    border-radius:50%;
+    object-fit:cover;
+    border:4px solid #14b8a6;
+    box-shadow:0 8px 25px rgba(20,184,166,.35);
+    margin-bottom:16px;
+}
+
+        /* Stat cards inside profile */
+        .profile-stat-box {
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            text-align: center;
+            height: 100%;
+        }
+
+        .profile-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        .profile-stat-val {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-heading);
+        }
+
+        /* Action buttons */
+        .btn-gold-action {
+            background: var(--accent-gold-glow);
+            color: var(--accent-gold) !important;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            font-weight: 600;
+            font-size: 0.88rem;
+            padding: 10px 20px;
+            border-radius: var(--radius-pill);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-gold-action:hover {
+            background: var(--accent-gold);
+            color: #ffffff !important;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-success-action {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--accent-success) !important;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-weight: 600;
+            font-size: 0.88rem;
+            padding: 10px 20px;
+            border-radius: var(--radius-pill);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-success-action:hover {
+            background: var(--accent-success);
+            color: #ffffff !important;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-ghost-action {
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border-subtle);
+            font-weight: 600;
+            font-size: 0.88rem;
+            padding: 10px 20px;
+            border-radius: var(--radius-pill);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-ghost-action:hover {
+            background: rgba(148, 163, 184, 0.2);
+            color: var(--text-heading) !important;
+            border-color: var(--border-strong);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= FLOATING NAVBAR ================= -->
+    <nav class="navbar navbar-expand-xl navbar-custom">
+        <div class="container">
+            <a class="brand-logo" href="/">
+                <div class="brand-icon">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <span>SecureVault</span>
+            </a>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <!-- Theme Toggle Button -->
+                <button type="button" id="themeToggleBtn" class="nav-btn nav-btn-ghost me-2" onclick="toggleTheme()">
+                    <i class="bi bi-moon-stars-fill text-teal" id="themeIcon"></i>
+                    <span id="themeText">Dark</span>
+                </button>
+
+                <a href="/dashboard" class="nav-btn nav-btn-ghost">
+                    <i class="bi bi-arrow-left me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ================= PROFILE CONTAINER ================= -->
+    <div class="container flex-grow-1 d-flex align-items-center justify-content-center">
+        <div class="profile-card w-100">
+            <div class="profile-card-header">
+                <div class="profile-avatar-large">
+{% if user.profile_picture and user.profile_picture != "default.png" %}
+
+<img
+    src="{{ url_for('static', filename='profile_pictures/' + user.profile_picture) }}"
+    class="profile-avatar-large"
+    alt="Profile Picture">
+
+{% else %}
+
+<img
+    src="{{ url_for('static', filename='profile_pictures/default.png') }}"
+    class="profile-avatar-large"
+    alt="Default Profile Picture">
+
+{% endif %}
+            </div>
+
+                <h2 class="fw-bold text-heading fs-3 mb-1">{{ user.name }}</h2>
+                <p class="text-secondary font-mono small mb-0">
+                    <i class="bi bi-envelope me-1 text-muted"></i> {{ user.email }}
+                </p>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <div class="row g-3 text-center mb-4">
+                    <div class="col-12 col-md-4">
+                        <div class="profile-stat-box">
+                            <div class="profile-stat-label">Total Files</div>
+                            <div class="profile-stat-val text-teal">{{ total_files }}</div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <div class="profile-stat-box">
+                            <div class="profile-stat-label">Storage Used</div>
+                            <div class="profile-stat-val text-blue fs-4 mt-1">{{ storage }}</div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <div class="profile-stat-box">
+                            <div class="profile-stat-label">Activities Logged</div>
+                            <div class="profile-stat-val text-purple">{{ activities }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap align-items-center justify-content-center gap-2 pt-2">
+                    <a href="{{ url_for('edit_profile') }}"
+                       class="btn btn-warning">
+                        Edit Profile</a>
+
+                    <a href="/change-password" class="btn-gold-action">
+                        <i class="bi bi-key-fill"></i> Change Password
+                    </a>
+
+                    <a href="/export-activity" class="btn-success-action">
+                        <i class="bi bi-file-earmark-arrow-down-fill"></i> Export Activity Log
+                    </a>
+
+                    <a href="/dashboard" class="btn-ghost-action">
+                        <i class="bi bi-arrow-left"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="text-center py-4 border-top border-secondary border-opacity-10 text-muted fs-7 mt-auto">
+        <div class="container">
+            <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
+                <div>
+                    <strong class="text-heading">SecureVault</strong> © 2026 — User Profile Center
+                </div>
+                <div class="d-flex align-items-center gap-3 text-muted fs-8">
+                    <span><i class="bi bi-shield-check text-teal me-1"></i> Account Security Active</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Dark / Light Theme Script -->
+    <script>
+        function applyThemeUI(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            if (themeIcon && themeText) {
+                if (theme === 'light') {
+                    themeIcon.className = 'bi bi-sun-fill text-warning';
+                    themeText.textContent = 'Light';
+                } else {
+                    themeIcon.className = 'bi bi-moon-stars-fill text-teal';
+                    themeText.textContent = 'Dark';
+                }
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyThemeUI(newTheme);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            applyThemeUI(currentTheme);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,427 @@
+
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview — {{ file.filename }}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Typography: Plus Jakarta Sans (UI & Display), JetBrains Mono (Data & Hashes) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Immediate Theme Initialization Script (Prevents Flickering) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const theme = savedTheme ? savedTheme : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
+    <style>
+        /* ================= THEME COLOR VARIABLES ================= */
+        :root, [data-theme="dark"] {
+            --bg-body: #060913;
+            --bg-card: rgba(15, 23, 42, 0.55);
+            --bg-card-hover: rgba(30, 41, 59, 0.65);
+            --bg-glass: rgba(9, 13, 22, 0.75);
+            --bg-input: rgba(9, 13, 22, 0.6);
+            --bg-header: rgba(15, 23, 42, 0.4);
+
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.18);
+
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --text-heading: #ffffff;
+
+            --bg-gradient-overlay: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20, 184, 166, 0.12), transparent),
+                radial-gradient(circle at 100% 40%, rgba(99, 102, 241, 0.08), transparent 40%),
+                radial-gradient(circle at 0% 80%, rgba(168, 85, 247, 0.06), transparent 40%),
+                radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+
+            --hero-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.3) 100%);
+            --brand-gradient: linear-gradient(135deg, #ffffff 30%, var(--accent-teal) 100%);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-card-hover: rgba(255, 255, 255, 0.98);
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --bg-input: #ffffff;
+            --bg-header: rgba(241, 245, 249, 0.8);
+
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --border-strong: rgba(0, 0, 0, 0.18);
+
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --text-heading: #020617;
+
+            --bg-gradient-overlay: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20, 184, 166, 0.1), transparent),
+                radial-gradient(circle at 100% 40%, rgba(99, 102, 241, 0.05), transparent 40%),
+                radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+
+            --hero-bg: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            --brand-gradient: linear-gradient(135deg, #0f172a 30%, #0d9488 100%);
+        }
+
+        /* Brand Accent System */
+        :root {
+            --accent-teal: #14b8a6;
+            --accent-teal-glow: rgba(20, 184, 166, 0.15);
+            
+            --accent-blue: #0284c7;
+            --accent-gold: #d97706;
+
+            --radius-xl: 20px;
+            --radius-lg: 14px;
+            --radius-md: 10px;
+            --radius-pill: 9999px;
+
+            --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        /* Ambient background */
+        body {
+            background-color: var(--bg-body) !important;
+            background-image: var(--bg-gradient-overlay);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px;
+            background-attachment: fixed;
+            color: var(--text-primary) !important;
+            font-family: var(--font-sans) !important;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Responsive text colors in Light vs Dark mode */
+        [data-theme="light"] .text-white {
+            color: var(--text-heading) !important;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: var(--radius-pill);
+        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.5); }
+
+        /* ================= FLOATING NAVBAR ================= */
+        .navbar-custom {
+            background: var(--bg-glass) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 12px 0 !important;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .brand-logo {
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.03em;
+            background: var(--brand-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(56, 189, 248, 0.1));
+            border: 1px solid rgba(20, 184, 166, 0.4);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-teal);
+            font-size: 1.1rem;
+            box-shadow: 0 0 15px rgba(20, 184, 166, 0.2);
+        }
+
+        .nav-btn {
+            font-size: 0.82rem !important;
+            font-weight: 600 !important;
+            padding: 8px 16px !important;
+            border-radius: var(--radius-pill) !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-btn-ghost {
+            background: rgba(148, 163, 184, 0.08);
+            color: var(--text-primary) !important;
+            border-color: var(--border-subtle);
+        }
+        .nav-btn-ghost:hover {
+            background: rgba(148, 163, 184, 0.18);
+            color: var(--text-heading) !important;
+            border-color: var(--border-strong);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn-teal {
+            background: var(--accent-teal);
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 14px rgba(20, 184, 166, 0.25);
+        }
+        .nav-btn-teal:hover {
+            background: #0d9488;
+            box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* ================= HERO HEADER ================= */
+        .hero-banner {
+            background: var(--hero-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            padding: 24px 32px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: background 0.3s ease;
+        }
+
+        /* ================= PREVIEW CONTAINER CARD ================= */
+        .preview-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .preview-card-header {
+            padding: 16px 24px;
+            background: var(--bg-header);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .preview-content-box {
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .preview-iframe {
+            width: 100%;
+            height: 720px;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            background: #ffffff;
+        }
+
+        .preview-img {
+            max-height: 700px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-subtle);
+            object-fit: contain;
+        }
+
+        .custom-alert-warning {
+            background: rgba(245, 158, 11, 0.1) !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+            color: var(--accent-gold) !important;
+            border-radius: var(--radius-lg);
+            padding: 40px 24px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= FLOATING NAVBAR ================= -->
+    <nav class="navbar navbar-expand-xl navbar-custom">
+        <div class="container">
+            <a class="brand-logo" href="/">
+                <div class="brand-icon">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <span>SecureVault</span>
+            </a>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <!-- Theme Toggle Button -->
+                <button type="button" id="themeToggleBtn" class="nav-btn nav-btn-ghost me-2" onclick="toggleTheme()">
+                    <i class="bi bi-moon-stars-fill text-teal" id="themeIcon"></i>
+                    <span id="themeText">Dark</span>
+                </button>
+
+                <a href="{{ url_for('dashboard') }}" class="nav-btn nav-btn-ghost">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ================= HERO HEADER ================= -->
+    <div class="container mt-4">
+        <div class="hero-banner">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="brand-icon" style="width: 44px; height: 44px; font-size: 1.3rem;">
+                        <i class="bi bi-eye-fill"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h2 class="mb-0 fw-bold fs-4 text-heading">{{ file.filename }}</h2>
+                            <span class="badge bg-body text-muted border border-secondary font-mono px-2 py-1 fs-8">
+                                {{ file.file_type or 'Preview' }}
+                            </span>
+                        </div>
+                        <p class="text-secondary mb-0 small">Secure Sandbox File Inspector & Viewer</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{{ url_for('download', filename=file.encrypted_filename) }}" class="nav-btn nav-btn-teal px-3 py-2">
+                        <i class="bi bi-download me-1"></i> Download Original
+                    </a>
+                    <a href="{{ url_for('dashboard') }}" class="nav-btn nav-btn-ghost px-3 py-2">
+                        <i class="bi bi-grid-fill me-1"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PREVIEW CARD ================= -->
+    <div class="container mt-4 mb-5">
+        <div class="preview-card">
+            <div class="preview-card-header">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-display text-teal"></i>
+                    <span class="fw-semibold text-heading fs-7">Interactive View Canvas</span>
+                </div>
+                <span class="font-mono text-muted fs-8">E2EE Stream Active</span>
+            </div>
+
+            <div class="preview-content-box">
+                {% if file.file_type == ".pdf" %}
+                    <iframe
+                        src="{{ url_for('download', filename=file.encrypted_filename) }}"
+                        class="preview-iframe">
+                    </iframe>
+
+                {% elif file.file_type in [".png", ".jpg", ".jpeg"] %}
+                    <img
+                        src="{{ url_for('download', filename=file.encrypted_filename) }}"
+                        class="img-fluid preview-img"
+                        alt="{{ file.filename }}">
+
+                {% elif file.file_type == ".txt" %}
+                    <iframe
+                        src="{{ url_for('download', filename=file.encrypted_filename) }}"
+                        class="preview-iframe"
+                        style="height: 600px;">
+                    </iframe>
+
+                {% else %}
+                    <div class="custom-alert-warning w-100 my-4">
+                        <div class="display-4 mb-3">
+                            <i class="bi bi-file-earmark-x-fill"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">Inline Preview Not Supported</h4>
+                        <p class="small mb-4 text-secondary">The <strong>{{ file.file_type }}</strong> format cannot be rendered directly inside the web browser sandbox.</p>
+                        <a href="{{ url_for('download', filename=file.encrypted_filename) }}" class="nav-btn nav-btn-teal px-4 py-2">
+                            <i class="bi bi-download me-1"></i> Download File to View
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="text-center py-4 border-top border-secondary border-opacity-10 text-muted fs-7 mt-auto">
+        <div class="container">
+            <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
+                <div>
+                    <strong class="text-heading">SecureVault</strong> © 2026 — File Preview Sandbox
+                </div>
+                <div class="d-flex align-items-center gap-3 text-muted fs-8">
+                    <span><i class="bi bi-shield-check text-teal me-1"></i> Isolated Viewing Canvas</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Dark / Light Theme Script -->
+    <script>
+        function applyThemeUI(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            if (themeIcon && themeText) {
+                if (theme === 'light') {
+                    themeIcon.className = 'bi bi-sun-fill text-warning';
+                    themeText.textContent = 'Light';
+                } else {
+                    themeIcon.className = 'bi bi-moon-stars-fill text-teal';
+                    themeText.textContent = 'Dark';
+                }
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyThemeUI(newTheme);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            applyThemeUI(currentTheme);
+        });
+    </script>
+</body>
+
+</html>

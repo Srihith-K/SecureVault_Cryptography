@@ -1,0 +1,187 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+Login — SecureVault
+{% endblock %}
+
+{% block content %}
+<style>
+    .auth-card {
+        background: var(--bg-card);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        transition: background 0.3s ease;
+    }
+
+    .auth-card-header {
+        padding: 32px 32px 16px 32px;
+        text-align: center;
+    }
+
+    .auth-icon-badge {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: var(--accent-teal-glow);
+        color: var(--accent-teal);
+        border: 1px solid rgba(20, 184, 166, 0.3);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 16px;
+        box-shadow: 0 0 20px rgba(20, 184, 166, 0.2);
+    }
+
+    .form-label-custom {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 8px;
+    }
+
+    .custom-input {
+        background: var(--bg-input) !important;
+        border: 1px solid var(--border-subtle) !important;
+        color: var(--text-primary) !important;
+        font-size: 0.9rem;
+        border-radius: var(--radius-md) !important;
+        padding: 12px 16px !important;
+        transition: all 0.2s ease;
+    }
+    .custom-input:focus {
+        border-color: var(--accent-teal) !important;
+        box-shadow: 0 0 0 3px var(--accent-teal-glow) !important;
+        outline: none;
+    }
+
+    .btn-teal-submit {
+        background: var(--accent-teal);
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem;
+        padding: 12px;
+        border-radius: var(--radius-pill);
+        border: none;
+        box-shadow: 0 4px 14px rgba(20, 184, 166, 0.25);
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+    }
+    .btn-teal-submit:hover {
+        background: #0d9488;
+        box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
+        transform: translateY(-1px);
+    }
+</style>
+
+<div class="row justify-content-center py-4">
+    <div class="col-12 col-md-8 col-lg-5">
+        <div class="auth-card p-2 p-md-3">
+            <div class="auth-card-header">
+                <div class="auth-icon-badge">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <h3 class="fw-bold text-heading mb-1">Welcome Back</h3>
+                <p class="text-secondary small mb-0">Hybrid Cryptography Cloud Vault</p>
+            </div>
+
+            <div class="card-body p-4 pt-2">
+                <form method="POST">
+                    <div class="mb-4">
+                        <label class="form-label-custom">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-end-0 text-muted" style="background: var(--bg-input) !important; border-color: var(--border-subtle) !important;">
+                                <i class="bi bi-envelope-fill"></i>
+                            </span>
+                            <input
+                                type="email"
+                                class="form-control custom-input border-start-0 ps-0"
+                                name="email"
+                                placeholder="name@example.com"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-end-0 text-muted" style="background: var(--bg-input) !important; border-color: var(--border-subtle) !important;">
+                                <i class="bi bi-key-fill"></i>
+                            </span>
+                            <input
+                                type="password"
+                                class="form-control custom-input border-start-0 border-end-0 ps-0"
+                                id="password"
+                                name="password"
+                                placeholder="Enter your password"
+                                required>
+                            <button
+                                class="btn btn-outline-secondary border-start-0" 
+                                style="background: var(--bg-input) !important; border-color: var(--border-subtle) !important;"
+                                type="button"
+                                onclick="togglePassword()">
+                                <i class="bi bi-eye-fill text-muted" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between my-4">
+                        <div class="form-check">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                id="remember_me"
+                                name="remember_me"
+                                style="background-color: var(--bg-input); border-color: var(--border-subtle);">
+                            <label class="form-check-label text-secondary small fw-medium" for="remember_me">
+                                Remember Me
+                            </label>
+                        </div>
+
+                        <a href="{{ url_for('forgot_password') }}" class="text-teal text-decoration-none small fw-semibold">
+                            Forgot Password?
+                        </a>
+                    </div>
+
+                    <button type="submit" class="btn-teal-submit mb-3">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Vault
+                    </button>
+                </form>
+
+                <hr class="my-4 border-secondary border-opacity-25">
+
+                <div class="text-center text-muted small">
+                    Don't have an account yet? 
+                    <a href="{{ url_for('register') }}" class="text-teal text-decoration-none fw-bold ms-1">
+                        Register Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePassword() {
+        const p = document.getElementById("password");
+        const icon = document.getElementById("toggleIcon");
+        if (p.type === "password") {
+            p.type = "text";
+            icon.className = "bi bi-eye-slash-fill text-teal";
+        } else {
+            p.type = "password";
+            icon.className = "bi bi-eye-fill text-muted";
+        }
+    }
+</script>
+{% endblock %}

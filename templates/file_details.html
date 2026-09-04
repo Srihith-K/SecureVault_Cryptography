@@ -1,0 +1,535 @@
+
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Details — SecureVault</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Typography: Plus Jakarta Sans (UI & Display), JetBrains Mono (Data & Hashes) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Immediate Theme Initialization Script (Prevents Flickering) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const theme = savedTheme ? savedTheme : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
+    <style>
+        /* ================= THEME COLOR VARIABLES ================= */
+        :root, [data-theme="dark"] {
+            --bg-body: #060913;
+            --bg-card: rgba(15, 23, 42, 0.55);
+            --bg-card-hover: rgba(30, 41, 59, 0.65);
+            --bg-glass: rgba(9, 13, 22, 0.75);
+            --bg-input: rgba(9, 13, 22, 0.6);
+            --bg-header: rgba(15, 23, 42, 0.4);
+
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.18);
+
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --text-heading: #ffffff;
+
+            --bg-gradient-overlay: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20, 184, 166, 0.12), transparent),
+                radial-gradient(circle at 100% 40%, rgba(99, 102, 241, 0.08), transparent 40%),
+                radial-gradient(circle at 0% 80%, rgba(168, 85, 247, 0.06), transparent 40%),
+                radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+
+            --hero-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.3) 100%);
+            --brand-gradient: linear-gradient(135deg, #ffffff 30%, var(--accent-teal) 100%);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-card-hover: rgba(255, 255, 255, 0.98);
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --bg-input: #ffffff;
+            --bg-header: rgba(241, 245, 249, 0.8);
+
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --border-strong: rgba(0, 0, 0, 0.18);
+
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --text-heading: #020617;
+
+            --bg-gradient-overlay: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20, 184, 166, 0.1), transparent),
+                radial-gradient(circle at 100% 40%, rgba(99, 102, 241, 0.05), transparent 40%),
+                radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+
+            --hero-bg: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            --brand-gradient: linear-gradient(135deg, #0f172a 30%, #0d9488 100%);
+        }
+
+        /* Brand Accent System */
+        :root {
+            --accent-teal: #14b8a6;
+            --accent-teal-glow: rgba(20, 184, 166, 0.15);
+            
+            --accent-blue: #0284c7;
+            --accent-blue-glow: rgba(2, 132, 199, 0.15);
+
+            --accent-gold: #d97706;
+            --accent-gold-glow: rgba(217, 119, 6, 0.15);
+
+            --accent-danger: #dc2626;
+            --accent-danger-glow: rgba(220, 38, 38, 0.15);
+
+            --accent-success: #10b981;
+
+            --radius-xl: 20px;
+            --radius-lg: 14px;
+            --radius-md: 10px;
+            --radius-pill: 9999px;
+
+            --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        /* Ambient background */
+        body {
+            background-color: var(--bg-body) !important;
+            background-image: var(--bg-gradient-overlay);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px;
+            background-attachment: fixed;
+            color: var(--text-primary) !important;
+            font-family: var(--font-sans) !important;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Responsive text colors in Light vs Dark mode */
+        [data-theme="light"] .text-white {
+            color: var(--text-heading) !important;
+        }
+
+        /* ================= FLOATING NAVBAR ================= */
+        .navbar-custom {
+            background: var(--bg-glass) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 12px 0 !important;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .brand-logo {
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.03em;
+            background: var(--brand-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(56, 189, 248, 0.1));
+            border: 1px solid rgba(20, 184, 166, 0.4);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-teal);
+            font-size: 1.1rem;
+            box-shadow: 0 0 15px rgba(20, 184, 166, 0.2);
+        }
+
+        .nav-btn {
+            font-size: 0.82rem !important;
+            font-weight: 600 !important;
+            padding: 8px 16px !important;
+            border-radius: var(--radius-pill) !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-btn-ghost {
+            background: rgba(148, 163, 184, 0.08);
+            color: var(--text-primary) !important;
+            border-color: var(--border-subtle);
+        }
+        .nav-btn-ghost:hover {
+            background: rgba(148, 163, 184, 0.18);
+            color: var(--text-heading) !important;
+            border-color: var(--border-strong);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn-teal {
+            background: var(--accent-teal);
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 14px rgba(20, 184, 166, 0.25);
+        }
+        .nav-btn-teal:hover {
+            background: #0d9488;
+            box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* ================= DETAILS CARD CONTAINER ================= */
+        .details-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            max-width: 720px;
+            margin: 40px auto;
+        }
+
+        .details-card-header {
+            padding: 24px 32px;
+            background: var(--bg-header);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .file-icon-large {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+            background: var(--accent-teal-glow);
+            color: var(--accent-teal);
+            border: 1px solid rgba(20, 184, 166, 0.3);
+        }
+
+        .table-details {
+            margin-bottom: 0 !important;
+        }
+
+        .table-details tr {
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .table-details tr:last-child {
+            border-bottom: none;
+        }
+
+        .table-details th {
+            width: 32%;
+            padding: 16px 28px !important;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            background: rgba(9, 13, 22, 0.2) !important;
+            vertical-align: middle;
+        }
+
+        .table-details td {
+            padding: 16px 28px !important;
+            font-size: 0.9rem;
+            color: var(--text-heading);
+            background: transparent !important;
+            vertical-align: middle;
+        }
+
+        .badge-verified {
+            background: var(--accent-teal-glow) !important;
+            border: 1px solid rgba(20, 184, 166, 0.3) !important;
+            color: var(--accent-teal) !important;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 5px 12px !important;
+            border-radius: var(--radius-pill) !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge-tampered {
+            background: var(--accent-danger-glow) !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+            color: var(--accent-danger) !important;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 5px 12px !important;
+            border-radius: var(--radius-pill) !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .hash-box {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            word-break: break-all;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .btn-ghost-back {
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--text-primary) !important;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 10px 24px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--border-subtle);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-ghost-back:hover {
+            background: rgba(148, 163, 184, 0.2);
+            color: var(--text-heading) !important;
+            border-color: var(--border-strong);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= FLOATING NAVBAR ================= -->
+    <nav class="navbar navbar-expand-xl navbar-custom">
+        <div class="container">
+            <a class="brand-logo" href="/">
+                <div class="brand-icon">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <span>SecureVault</span>
+            </a>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <!-- Theme Toggle Button -->
+                <button type="button" id="themeToggleBtn" class="nav-btn nav-btn-ghost me-2" onclick="toggleTheme()">
+                    <i class="bi bi-moon-stars-fill text-teal" id="themeIcon"></i>
+                    <span id="themeText">Dark</span>
+                </button>
+
+                <a href="/dashboard" class="nav-btn nav-btn-ghost">
+                    <i class="bi bi-arrow-left me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ================= DETAILS CARD CONTAINER ================= -->
+    <div class="container flex-grow-1 d-flex align-items-center justify-content-center">
+        <div class="details-card w-100">
+            <div class="details-card-header">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="file-icon-large">
+                        <i class="bi bi-file-earmark-lock-fill"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold fs-5 text-heading">{{ file.filename }}</h3>
+                        <p class="text-secondary small mb-0 font-mono">ID: #{{ file.id }}</p>
+                    </div>
+                </div>
+
+                <a href="/dashboard" class="btn-ghost-back">
+                    <i class="bi bi-arrow-left me-1"></i> Back
+                </a>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-details">
+                        <tr>
+                            <th>Filename</th>
+                            <td class="fw-semibold text-heading">{{ file.filename }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>File Format</th>
+                            <td class="font-mono text-uppercase text-teal">{{ file.file_type or '—' }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>File Size</th>
+                            <td class="font-mono">{{ file.file_size }} Bytes</td>
+                        </tr>
+
+                        <tr>
+                            <th>Encryption Engine</th>
+                            <td>
+                                <span class="badge bg-dark border border-secondary text-info font-mono px-3 py-1 fs-7">
+                                    <i class="bi bi-cpu me-1"></i> {{ file.encryption_algorithm or 'AES-256-GCM' }}
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>Integrity Check</th>
+                            <td>
+                                {% if file.integrity_status == "Verified" %}
+                                    <span class="badge-verified">
+                                        <i class="bi bi-patch-check-fill"></i> Verified
+                                    </span>
+                                {% else %}
+                                    <span class="badge-tampered">
+                                        <i class="bi bi-exclamation-octagon-fill"></i> Tampered
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>SHA-256 Hash</th>
+                            <td>
+                                <div class="hash-box">
+                                    <span>{{ file.file_hash }}</span>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary border-0" 
+                                            onclick="navigator.clipboard.writeText('{{ file.file_hash }}'); alert('SHA-256 Hash copied!');"
+                                            title="Copy Hash">
+                                        <i class="bi bi-clipboard text-teal"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>Total Downloads</th>
+                            <td class="font-mono fw-semibold">{{ file.download_count }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Last Downloaded</th>
+                            <td class="font-mono text-muted fs-7">
+                                {% if file.last_download %}
+                                    <i class="bi bi-clock me-1 text-teal"></i> {{ file.last_download.strftime("%d-%m-%Y %H:%M") }}
+                                {% else %}
+                                    <span class="text-muted">Never downloaded</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>Uploaded On</th>
+                            <td class="font-mono text-muted fs-7">
+                                <i class="bi bi-calendar3 me-1 text-teal"></i> {{ file.upload_date.strftime("%d-%m-%Y %H:%M") }}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="p-4 bg-dark bg-opacity-25 border-top border-secondary border-opacity-10 d-flex align-items-center justify-content-between">
+                <a href="/dashboard" class="btn-ghost-back">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                </a>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a href="/decrypt?file={{ file.encrypted_filename if file.encrypted_filename else file.filename }}" class="nav-btn nav-btn-ghost">
+                        <i class="bi bi-unlock-fill text-gold me-1"></i> Decrypt
+                    </a>
+                    <a href="/download/{{ file.encrypted_filename if file.encrypted_filename else file.filename }}" class="nav-btn nav-btn-teal">
+                        <i class="bi bi-download me-1"></i> Download
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="text-center py-4 border-top border-secondary border-opacity-10 text-muted fs-7 mt-auto">
+        <div class="container">
+            <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
+                <div>
+                    <strong class="text-heading">SecureVault</strong> © 2026 — File Inspector
+                </div>
+                <div class="d-flex align-items-center gap-3 text-muted fs-8">
+                    <span><i class="bi bi-shield-check text-teal me-1"></i> Cryptographic Verification Verified</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Dark / Light Theme Logic -->
+    <script>
+        function applyThemeUI(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            if (themeIcon && themeText) {
+                if (theme === 'light') {
+                    themeIcon.className = 'bi bi-sun-fill text-warning';
+                    themeText.textContent = 'Light';
+                } else {
+                    themeIcon.className = 'bi bi-moon-stars-fill text-teal';
+                    themeText.textContent = 'Dark';
+                }
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyThemeUI(newTheme);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            applyThemeUI(currentTheme);
+        });
+    </script>
+</body>
+
+</html>
+```
