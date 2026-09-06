@@ -118,4 +118,3 @@ dist/
 # Cryptographic Key Material
 # ========================================
 crypto/master.key
-crypto/user_keys.py
