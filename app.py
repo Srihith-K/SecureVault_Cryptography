@@ -1,5 +1,6 @@
 import csv
 import base64
+from fileinput import filename
 from io import StringIO
 from flask import (
     Flask,
@@ -60,6 +61,7 @@ from rsa_encryption import (
     decrypt_aes_key_with_private_key
 )
 from crypto.digital_signature import sign_data, verify_signature
+from storage import upload_to_b2, delete_from_b2, download_from_b2
 from reportlab.platypus import (
     SimpleDocTemplate,
     Table,
@@ -204,8 +206,18 @@ def verify_file_integrity(file, user_id):
 
     encrypted_path = os.path.join(
         ENCRYPTED_FOLDER,
-        file.encrypted_filename
-    )
+        f"integrity_{file.id}.enc"
+        )
+
+    try:
+        download_from_b2(
+            file.encrypted_filename,
+            encrypted_path
+        )
+    except Exception:
+        file.integrity_status = "Missing"
+        db.session.commit()
+        return False
 
     if not os.path.exists(encrypted_path):
 
@@ -1346,6 +1358,41 @@ def upload():
                 db.session.add(new_file)
                 db.session.commit()
 
+                # ---------------- B2 PERMANENT STORAGE ---------------- #
+                b2_file_object = (
+                    f"users/{session['user_id']}/"
+                    f"files/{new_file.id}/"
+                    f"versions/1/file.enc"
+                    )
+
+                b2_key_object = (
+                    f"users/{session['user_id']}/"f"files/{new_file.id}/"
+                    f"versions/1/key.enc"
+
+                    )
+
+                upload_to_b2(
+                    encrypted_path,
+                    b2_file_object
+                    )
+
+                upload_to_b2(
+                    key_path,
+                    b2_key_object
+
+                    )
+
+                encrypted_filename = b2_file_object
+                key_filename = b2_key_object
+                new_file.encrypted_filename = b2_file_object
+                new_file.aes_key_filename = b2_key_object
+                db.session.commit()
+                print("====================================")
+                print("B2 PERMANENT UPLOAD SUCCESS")
+                print("File:", b2_file_object)
+                print("Key:", b2_key_object)
+                print("====================================")
+
                 version = FileVersion(
                     file_id=new_file.id,
                     version_number=1,
@@ -1375,15 +1422,40 @@ def upload():
                 if latest_version:
                     next_version = latest_version.version_number + 1
 
+                # Upload version to B2
+                b2_file_object = (
+                    f"users/{session['user_id']}/"
+                    f"files/{existing_file.id}/"
+                    f"versions/{next_version}/file.enc"
+                    )
+
+                b2_key_object = (
+                    f"users/{session['user_id']}/"
+                    f"files/{existing_file.id}/"
+                    f"versions/{next_version}/key.enc"
+                    )
+
+                upload_to_b2(
+                    encrypted_path,
+                    b2_file_object
+                    )
+
+                upload_to_b2(
+                    key_path,
+                    b2_key_object
+                    )
                 version = FileVersion(
                     file_id=existing_file.id,
                     version_number=next_version,
                     filename=existing_file.filename,
-                    encrypted_filename=encrypted_filename,
-                    encrypted_key=key_filename,
+                    encrypted_filename=b2_file_object,
+                    encrypted_key=b2_key_object,
                     sha256_hash=file_hash,
                     file_size=file_size
-                )
+                    )
+
+                existing_file.encrypted_filename = b2_file_object
+                existing_file.aes_key_filename = b2_key_object
                 db.session.add(version)
 
                 existing_file.encrypted_filename = encrypted_filename
@@ -1733,7 +1805,7 @@ SecureVault Team
 
 # ---------------- DOWNLOAD & DECRYPT ---------------- #
 
-@app.route("/download/<filename>")
+@app.route("/download/<path:filename>")
 def download(filename):
     if "user_id" not in session:
         flash("Your session has expired. Please log in again.", "warning")
@@ -1778,11 +1850,21 @@ def download(filename):
 
     db.session.commit()
 
+    # Download encrypted file from B2
+    b2_file_path = os.path.join(
+    BASE_DIR,
+    "encrypted",
+    os.path.basename(filename)
+)
+    download_from_b2(
+    file.encrypted_filename,
+    b2_file_path
+)
     return send_from_directory(
-        ENCRYPTED_FOLDER,
-        filename,
-        as_attachment=True
-    )
+    ENCRYPTED_FOLDER,
+    os.path.basename(filename),
+    as_attachment=True
+)
 
 @app.route("/verify-share-password/<int:file_id>", methods=["GET", "POST"])
 def verify_share_password(file_id):
@@ -2055,10 +2137,14 @@ def shared_download(file_id):
         private_key
     )
 
-    # Encrypted file path
+    # Download encrypted file from B2
     encrypted_path = os.path.join(
         ENCRYPTED_FOLDER,
-        file.encrypted_filename
+        f"shared_{file.id}.enc"
+    )
+    download_from_b2(
+        file.encrypted_filename,
+        encrypted_path
     )
 
     # Decrypt file
@@ -2102,6 +2188,8 @@ def shared_download(file_id):
     )
 
 
+
+
 # ---------------- DECRYPT ---------------- #
 
 @app.route("/decrypt")
@@ -2132,11 +2220,15 @@ def decrypt():
 
         return redirect(url_for("dashboard"))
         
+    # Download encrypted AES key from B2
     key_path = os.path.join(
         ENCRYPTED_KEYS_FOLDER,
-        file.aes_key_filename
+        f"decrypt_{file.id}.key.enc"
     )
-    
+    download_from_b2(
+        file.aes_key_filename,
+        key_path
+    )
     with open(key_path, "rb") as key_file:
         encrypted_key = key_file.read()
         
@@ -2145,16 +2237,23 @@ def decrypt():
     file.integrity_status = "Verified"
     db.session.commit()
 
-    # Build absolute paths to recover the AES key and decrypt the file
+    # Download encrypted file from B2
     encrypted_path = os.path.join(
         ENCRYPTED_FOLDER,
-        filename
-    )
+        f"decrypt_{file.id}.enc"
+        )
+
+    download_from_b2(
+        file.encrypted_filename,
+        encrypted_path
+        )
+
+    # Decrypt the downloaded encrypted file
     
     decrypted_path = decrypt_file(
         encrypted_path,
         aes_key
-    )
+        )
 
     activity = Activity(
         user_id=session["user_id"],
