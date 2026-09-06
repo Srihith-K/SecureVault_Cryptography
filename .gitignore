@@ -63,7 +63,6 @@ encrypted_keys/
 
 # Python files containing private keys
 rsa_keys.py
-master_key.py
 
 # ========================================
 # Logs
