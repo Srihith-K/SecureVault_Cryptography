@@ -84,7 +84,7 @@ print("BREVO API:", BREVO_API_KEY)
 print("Sender:", SENDER_EMAIL)
 print("Name:", SENDER_NAME)
 
-app.secret_key = "securevault_secret_key"
+app.secret_key = os.getenv("SECRET_KEY")
 app.permanent_session_lifetime = timedelta(minutes=15)
 
 # ---------------- MAIL CONFIGURATION ---------------- #
