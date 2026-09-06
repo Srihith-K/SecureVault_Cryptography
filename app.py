@@ -1,6 +1,5 @@
 import csv
 import base64
-from fileinput import filename
 from io import StringIO
 from flask import (
     Flask,
@@ -23,9 +22,11 @@ from crypto.master_key import (
 from crypto.user_keys import generate_user_keypair
 from dotenv import load_dotenv
 from flask_bcrypt import Bcrypt
-from flask_mail import Mail, Message
 from werkzeug.utils import secure_filename
 import os
+import urllib.request
+import urllib.error
+import json
 import uuid
 import secrets
 import traceback
@@ -80,25 +81,51 @@ BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 SENDER_NAME = os.getenv("SENDER_NAME")
 
-print("BREVO API:", BREVO_API_KEY)
+def send_brevo_email(to_email, subject, body=None, html=None):
+    url = "https://api.brevo.com/v3/smtp/email"
+
+    data = {
+        "sender": {
+            "name": SENDER_NAME,
+            "email": SENDER_EMAIL
+        },
+        "to": [
+            {
+                "email": to_email
+            }
+        ],
+        "subject": subject
+    }
+
+    if html:
+        data["htmlContent"] = html
+    else:
+        data["textContent"] = body or ""
+
+    request = urllib.request.Request(
+        url,
+        data=json.dumps(data).encode("utf-8"),
+        headers={
+            "accept": "application/json",
+            "api-key": BREVO_API_KEY,
+            "content-type": "application/json"
+        },
+        method="POST"
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return response.read().decode("utf-8")
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8")
+        raise Exception(f"Brevo API Error {e.code}: {error_body}")
+
+print("Brevo configured:", bool(BREVO_API_KEY))
 print("Sender:", SENDER_EMAIL)
 print("Name:", SENDER_NAME)
 
 app.secret_key = os.getenv("SECRET_KEY")
 app.permanent_session_lifetime = timedelta(minutes=15)
-
-# ---------------- MAIL CONFIGURATION ---------------- #
-app.config["MAIL_SERVER"] = os.getenv("BREVO_SMTP_SERVER")
-app.config["MAIL_PORT"] = int(os.getenv("BREVO_SMTP_PORT", 587))
-app.config["MAIL_TIMEOUT"] = 60
-app.config["MAIL_USE_TLS"] = True
-app.config["MAIL_USE_SSL"] = False
-app.config["MAIL_USERNAME"] = os.getenv("BREVO_SMTP_LOGIN")
-app.config["MAIL_PASSWORD"] = os.getenv("BREVO_SMTP_KEY")
-app.config["MAIL_DEFAULT_SENDER"] = (
-    os.getenv("SENDER_NAME"),
-    os.getenv("SENDER_EMAIL")
-)
 
 # Base directory setup
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -313,19 +340,23 @@ def generate_otp():
 
 def send_login_otp(email, otp):
     subject = "SecureVault Login OTP"
+
     body = f"""
-Your One-Time Password (OTP) is:{otp}
+Your One-Time Password (OTP) is: {otp}
 
 This OTP is valid for 5 minutes.
 
 If you did not request this login, ignore this email.
+
+Regards,
+SecureVault Team
 """
-    msg = Message(
+
+    send_brevo_email(
+        to_email=email,
         subject=subject,
-        recipients=[email]
+        body=body
     )
-    msg.body = body
-    mail.send(msg)
 
 def send_share_email(
         receiver_email,
@@ -396,15 +427,11 @@ Regards,
 
 SecureVault Team
 """
-
-    msg = Message(
+    send_brevo_email(
+        to_email=receiver_email,
         subject=subject,
-        recipients=[receiver_email]
-    )
-
-    msg.body = body
-
-    mail.send(msg)
+        body=body
+        )
 
 def cleanup_expired_shares():
 
@@ -458,7 +485,6 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 bcrypt = Bcrypt(app)
-mail = Mail(app)
 db.init_app(app)
 migrate = Migrate(app, db)
 
@@ -949,12 +975,16 @@ def download_version(version_id):
         return redirect(url_for("dashboard"))
 
     encrypted_path = os.path.join(
-        app.config["UPLOAD_FOLDER"],
-        version.encrypted_filename
+        ENCRYPTED_FOLDER,
+        f"version_{version.id}.enc"
     )
-
-    if not os.path.exists(encrypted_path):
-        flash("Encrypted file not found.", "danger")
+    try:
+        download_from_b2(
+            version.encrypted_filename,
+            encrypted_path
+        )
+    except Exception:
+        flash("Encrypted file not found in cloud storage.", "danger")
         return redirect(url_for("dashboard"))
 
     current_hash = calculate_file_hash(encrypted_path)
@@ -967,11 +997,15 @@ def download_version(version_id):
 
     key_path = os.path.join(
         ENCRYPTED_KEYS_FOLDER,
-        version.encrypted_key
+        f"version_{version.id}.key.enc"
     )
-
-    if not os.path.exists(key_path):
-        flash("Encrypted key file not found.", "danger")
+    try:
+        download_from_b2(
+            version.encrypted_key,
+            key_path
+        )
+    except Exception:
+        flash("Encrypted key not found in cloud storage.", "danger")
         return redirect(url_for("dashboard"))
 
     with open(key_path, "rb") as key_file:
@@ -1100,21 +1134,17 @@ def delete_forever(file_id):
         flash("File not found.", "danger")
         return redirect(url_for("recycle_bin"))
 
-    encrypted_path = os.path.join(
-        ENCRYPTED_FOLDER,
-        file.encrypted_filename
-    )
+    # Delete encrypted file and AES key from B2
+    try:
+        if file.encrypted_filename:
+            delete_from_b2(file.encrypted_filename)
 
-    if os.path.exists(encrypted_path):
-        os.remove(encrypted_path)
-
-    if hasattr(file, 'aes_key_filename') and file.aes_key_filename:
-        key_path = os.path.join(
-            ENCRYPTED_KEYS_FOLDER,
-            file.aes_key_filename
-        )
-        if os.path.exists(key_path):
-            os.remove(key_path)
+        if file.aes_key_filename:
+            delete_from_b2(file.aes_key_filename)
+    except Exception as e:
+        print("B2 deletion error:", e)
+        flash("Unable to delete the file from cloud storage.", "danger")
+        return redirect(url_for("recycle_bin"))
 
     log_file_access(
         session["user_id"],
@@ -1294,8 +1324,10 @@ def upload():
 
             filename = secure_filename(uploaded_file.filename)
             unique_filename = str(uuid.uuid4())
-            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-
+            filepath = os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                unique_filename + "_" + filename
+                )
             uploaded_file.save(filepath)
             file_size = os.path.getsize(filepath)
 
@@ -1458,8 +1490,6 @@ def upload():
                 existing_file.aes_key_filename = b2_key_object
                 db.session.add(version)
 
-                existing_file.encrypted_filename = encrypted_filename
-                existing_file.aes_key_filename = key_filename
                 existing_file.file_hash = file_hash
                 existing_file.signature = signature
                 existing_file.signature_verified = True
@@ -1544,8 +1574,8 @@ def register():
             name=name,
             email=email,
             password=hashed_password,
-            email_verified=True,
-            verification_token=None,
+            email_verified=False,
+            verification_token=token,
             storage_limit=1073741824,
             storage_used=0,
             public_key=public_key,
@@ -1561,32 +1591,30 @@ def register():
             _external=True
             )
         
-        msg = Message(
-            subject="Verify Your SecureVault Account",
-            recipients=[email]
-            )
-        
-        msg.body = f"""
-        Hello {name},
+        email_body = f"""
+Hello {name},
 
 Welcome to SecureVault.
 
-Please verify your email by clicking the link below:
-
-{verification_link}
+Please verify your email by clicking the link below:{verification_link}
 
 Regards,
 SecureVault Team
 """
         try:
-            mail.send(msg)
+            send_brevo_email(
+                to_email=email,
+                subject="Verify Your SecureVault Account",
+                body=email_body
+            )
+
             flash(
                 "Registration successful. Please check your email to verify your account.",
                 "success"
             )
         except Exception as e:
             print("=" * 50)
-            print("EMAIL ERROR")
+            print("BREVO EMAIL ERROR")
             print(e)
             traceback.print_exc()
             print("=" * 50)
@@ -1675,25 +1703,26 @@ def forgot_password():
         )
 
         # Send email (HTML Email)
-        msg = Message(
-            subject="SecureVault Password Reset",
-            recipients=[user.email]
-        )
-        msg.html = render_template(
+        email_html = render_template(
             "reset_email.html",
             user=user,
             reset_link=reset_link
-        )
+            )
+
         print("Sending email to:", user.email)
-        
+
         try:
-            mail.send(msg)
-            print("Email sent successfully")
+            send_brevo_email(
+                to_email=user.email,
+                subject="SecureVault Password Reset",
+                html=email_html
+                )
+            print("Brevo email sent successfully")
 
             flash(
-                "A password reset link has been sent to your email.",
-                "success"
-            )
+        "A password reset link has been sent to your email.",
+        "success"
+    )
         except Exception as e:
             print("=" * 50)
             print("EMAIL ERROR")
@@ -1771,12 +1800,7 @@ def reset_password(token):
         db.session.commit()
 
         # Send confirmation email
-        msg = Message(
-            subject="Your SecureVault Password Has Been Changed",
-            recipients=[user.email]
-        )
-        
-        msg.body = f"""
+        email_body = f"""
 Hello {user.name},
 
 Your SecureVault password has been changed successfully.
@@ -1788,7 +1812,11 @@ If you did NOT change your password, please contact the administrator immediatel
 Regards,
 SecureVault Team
 """
-        mail.send(msg)
+        send_brevo_email(
+            to_email=user.email,
+            subject="Your SecureVault Password Has Been Changed",
+            body=email_body
+        )
 
         flash(
             "Password reset successfully. Please login.",
@@ -3339,18 +3367,19 @@ def admin_audit_log():
 @app.route("/test-email")
 def test_email():
     try:
-        msg = Message(
+        send_brevo_email(
+            to_email="securevault.test@gmail.com",
             subject="SecureVault Test Email",
-            recipients=["securevault.test@gmail.com"]
+            body="This is a test email sent from SecureVault."
         )
-        msg.body = "This is a test email sent from SecureVault."
-        mail.send(msg)
+
         flash("Test email sent successfully.", "success")
+
     except Exception as e:
         print(e)
         flash(f"Failed to send email: {e}", "danger")
-    return redirect(url_for("admin_dashboard"))
 
+    return redirect(url_for("admin_dashboard"))
 
 # ---------------- DATABASE ---------------- #
 
