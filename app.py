@@ -2294,7 +2294,8 @@ def decrypt():
     return send_from_directory(
         DECRYPTED_FOLDER,
         os.path.basename(decrypted_path),
-        as_attachment=True
+        as_attachment=True,
+        download_name=file.filename
     )
 
 
