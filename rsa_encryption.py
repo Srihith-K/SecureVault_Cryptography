@@ -14,12 +14,27 @@ KEYS_DIR = os.path.join(BASE_DIR, "keys")
 
 def encrypt_aes_key(aes_key):
 
-    public_key_path = os.path.join(KEYS_DIR, "public_key.pem")
+    private_key_b64 = os.getenv("SIGNING_PRIVATE_KEY_B64")
 
-    with open(public_key_path, "rb") as file:
-        public_key = serialization.load_pem_public_key(
-            file.read()
+    if private_key_b64:
+        import base64
+
+        private_key_data = base64.b64decode(private_key_b64)
+
+        private_key = serialization.load_pem_private_key(
+            private_key_data,
+            password=None
         )
+
+        public_key = private_key.public_key()
+
+    else:
+        public_key_path = os.path.join(KEYS_DIR, "public_key.pem")
+
+        with open(public_key_path, "rb") as file:
+            public_key = serialization.load_pem_public_key(
+                file.read()
+            )
 
     encrypted_key = public_key.encrypt(
         aes_key,
