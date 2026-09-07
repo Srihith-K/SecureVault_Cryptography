@@ -56,13 +56,26 @@ def encrypt_aes_key(aes_key):
 
 def decrypt_aes_key(encrypted_key):
 
-    private_key_path = os.path.join(KEYS_DIR, "private_key.pem")
+    private_key_b64 = os.getenv("SIGNING_PRIVATE_KEY_B64")
 
-    with open(private_key_path, "rb") as file:
+    if private_key_b64:
+        import base64
+
+        private_key_data = base64.b64decode(private_key_b64)
+
         private_key = serialization.load_pem_private_key(
-            file.read(),
+            private_key_data,
             password=None
         )
+
+    else:
+        private_key_path = os.path.join(KEYS_DIR, "private_key.pem")
+
+        with open(private_key_path, "rb") as file:
+            private_key = serialization.load_pem_private_key(
+                file.read(),
+                password=None
+            )
 
     aes_key = private_key.decrypt(
         encrypted_key,
