@@ -1,5 +1,5 @@
 import base64
-
+import os
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
@@ -14,10 +14,19 @@ PUBLIC_KEY_PATH = "keys/public_key.pem"
 # Load Private Key
 # ----------------------------------------------------
 def load_private_key():
+    private_key_b64 = os.getenv("SIGNING_PRIVATE_KEY_B64")
+
+    if private_key_b64:
+        private_key_data = base64.b64decode(private_key_b64)
+        return serialization.load_pem_private_key(
+            private_key_data,
+            password=None
+        )
+
     with open(PRIVATE_KEY_PATH, "rb") as key_file:
         return serialization.load_pem_private_key(
             key_file.read(),
-            password=None,
+            password=None
         )
 
 
