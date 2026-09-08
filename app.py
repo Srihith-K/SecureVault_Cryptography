@@ -1,5 +1,6 @@
 import csv
 import base64
+from fileinput import filename
 from io import StringIO
 from flask import (
     Flask,
@@ -76,6 +77,11 @@ from sqlalchemy import or_
 
 app = Flask(__name__)
 load_dotenv()
+@app.context_processor
+def inject_timedelta():
+    return dict(timedelta=timedelta)
+app.secret_key = "securevault_secret_key"
+app.permanent_session_lifetime = timedelta(minutes=15)
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
@@ -123,9 +129,6 @@ def send_brevo_email(to_email, subject, body=None, html=None):
 print("Brevo configured:", bool(BREVO_API_KEY))
 print("Sender:", SENDER_EMAIL)
 print("Name:", SENDER_NAME)
-
-app.secret_key = os.getenv("SECRET_KEY")
-app.permanent_session_lifetime = timedelta(minutes=15)
 
 # Base directory setup
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -1324,10 +1327,8 @@ def upload():
 
             filename = secure_filename(uploaded_file.filename)
             unique_filename = str(uuid.uuid4())
-            filepath = os.path.join(
-                app.config["UPLOAD_FOLDER"],
-                unique_filename + "_" + filename
-                )
+            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+
             uploaded_file.save(filepath)
             file_size = os.path.getsize(filepath)
 
@@ -2294,8 +2295,7 @@ def decrypt():
     return send_from_directory(
         DECRYPTED_FOLDER,
         os.path.basename(decrypted_path),
-        as_attachment=True,
-        download_name=file.filename
+        as_attachment=True
     )
 
 
@@ -2451,15 +2451,28 @@ def share_file(file_id):
 
         key_path = os.path.join(
             ENCRYPTED_KEYS_FOLDER,
-            file.aes_key_filename
+            f"share_{file.id}.key.enc"
         )
+
+        try:
+            download_from_b2(
+                file.aes_key_filename,
+                key_path
+            )
+        except Exception:
+            flash(
+                "Encrypted key not found in cloud storage.",
+                "danger"
+            )
+            return redirect(request.url)
+
         with open(key_path, "rb") as key_file:
             encrypted_owner_key = key_file.read()
-        aes_key = decrypt_aes_key(encrypted_owner_key)
-        receiver_encrypted_key = encrypt_aes_key_with_public_key(
-            aes_key,
-            receiver.public_key
-        )
+            aes_key = decrypt_aes_key(encrypted_owner_key)
+            receiver_encrypted_key = encrypt_aes_key_with_public_key(
+                aes_key,
+                receiver.public_key
+            )
 
         password_hash = generate_password_hash(share_password)
 
@@ -2478,8 +2491,8 @@ def share_file(file_id):
         )
         encrypted_one_time_secret_b64 = base64.b64encode(
             encrypted_one_time_secret
-
-            ).decode("utf-8")
+        ).decode("utf-8")
+        
         shared = SharedFile(
             file_id=file.id,
             sender_id=session["user_id"],
@@ -2510,7 +2523,6 @@ def share_file(file_id):
         )
 
         try:
-
             send_share_email(
                 receiver.email,
                 receiver.name,
@@ -2520,14 +2532,13 @@ def share_file(file_id):
                 encrypted_one_time_secret_b64
             )
         except Exception as e:
-
             print("Share Email Error:", e)
 
         activity = Activity(
             user_id=session["user_id"],
             action="Shared File",
             filename=file.filename
-            )
+        )
         
         db.session.add(activity)
         db.session.commit()
@@ -2584,11 +2595,8 @@ def revoke_share(share_id):
         return redirect("/dashboard")
 
     shared_key = SharedKey.query.filter_by(
-
         file_id=share.file_id,
-
         receiver_id=share.receiver_id
-
     ).first()
 
     if shared_key:
@@ -2598,13 +2606,9 @@ def revoke_share(share_id):
     db.session.delete(share)
 
     activity = Activity(
-
         user_id=session["user_id"],
-
         action="Revoked Share",
-
         filename=File.query.get(share.file_id).filename
-
     )
 
     db.session.add(activity)
