@@ -2295,7 +2295,8 @@ def decrypt():
     return send_from_directory(
         DECRYPTED_FOLDER,
         os.path.basename(decrypted_path),
-        as_attachment=True
+        as_attachment=True,
+        download_name=file.filename
     )
 
 
@@ -2453,13 +2454,13 @@ def share_file(file_id):
             ENCRYPTED_KEYS_FOLDER,
             f"share_{file.id}.key.enc"
         )
-
         try:
             download_from_b2(
                 file.aes_key_filename,
                 key_path
             )
-        except Exception:
+        except Exception as e:
+            print("B2 key download error:", e)
             flash(
                 "Encrypted key not found in cloud storage.",
                 "danger"
@@ -2468,11 +2469,11 @@ def share_file(file_id):
 
         with open(key_path, "rb") as key_file:
             encrypted_owner_key = key_file.read()
-            aes_key = decrypt_aes_key(encrypted_owner_key)
-            receiver_encrypted_key = encrypt_aes_key_with_public_key(
-                aes_key,
-                receiver.public_key
-            )
+        aes_key = decrypt_aes_key(encrypted_owner_key)
+        receiver_encrypted_key = encrypt_aes_key_with_public_key(
+            aes_key,
+            receiver.public_key
+        )
 
         password_hash = generate_password_hash(share_password)
 
